@@ -8,7 +8,7 @@ import CodeView from "./CodeView";
 import FileView from "./FileView";
 import ImageView from "./ImageView";
 import { useClipboard } from "@/hooks/use-clipboard";
-import { Copy, Check, Type, FileText, Code, FileIcon, ImageIcon, Clock, Infinity, Share2 } from "lucide-react";
+import { Copy, Check, Type, FileText, Code, FileIcon, ImageIcon, Clock, Infinity, Share2, Bot } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 
@@ -28,6 +28,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
   const [expiresAt, setExpiresAt] = useState<string | null | undefined>(share.expiresAt);
   const [busy, setBusy] = useState(false);
   const url = typeof window !== "undefined" ? `${window.location.origin}/s/${share.id}` : "";
+  const rawUrl = typeof window !== "undefined" ? `${window.location.origin}/api/shares/${share.id}/raw` : "";
   const meta = TYPE_META[share.type] || TYPE_META.text;
   const isOwner = !!share.isOwner;
 
@@ -58,6 +59,11 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
   const handleCopy = async () => {
     await copy(url);
     showToast(t("view.toast.linkCopied"));
+  };
+
+  const handleAgentCopy = async () => {
+    await copy(rawUrl);
+    showToast(t("view.toast.agentLinkCopied"));
   };
 
   const handleShare = async () => {
@@ -125,6 +131,14 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
             }`}
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
+          </button>
+          <button
+            onClick={handleAgentCopy}
+            title={t("view.agentLink")}
+            aria-label={t("view.agentLink")}
+            className="px-3 py-2 border border-pixel-purple/30 text-pixel-purple text-sm font-[family-name:var(--font-pixel-stack)] hover:bg-pixel-purple/10 transition-all"
+          >
+            <Bot size={12} />
           </button>
           {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
             <button

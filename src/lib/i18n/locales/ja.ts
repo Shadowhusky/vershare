@@ -317,4 +317,6 @@ export const ja: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.expiry": "ドロップは無期限でない限り7日で期限切れになります。",
   "doc.limits.lifecycle.grace": "期限切れのドロップは30日以内なら所有者が復元できます。",
   "doc.limits.lifecycle.purge": "30日を過ぎた期限切れドロップは完全に削除され、復元できません。",
+  "view.agentLink": "エージェント用リンクをコピー（生コンテンツURL）",
+  "view.toast.agentLinkCopied": "エージェント用リンクをコピーしました！AIに貼り付けよう",
 };

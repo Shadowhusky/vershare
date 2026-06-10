@@ -317,6 +317,8 @@ export const en = {
   "doc.limits.lifecycle.expiry": "Drops expire after 7 days unless made permanent.",
   "doc.limits.lifecycle.grace": "Expired drops can be renewed by their owner for up to 30 days.",
   "doc.limits.lifecycle.purge": "After 30 days, expired drops are permanently deleted and cannot be recovered.",
+  "view.agentLink": "Copy agent link (raw content URL)",
+  "view.toast.agentLinkCopied": "Agent link copied! Paste it to your AI",
 } as const;
 
 export type TranslationKey = keyof typeof en;

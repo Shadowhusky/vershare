@@ -317,4 +317,6 @@ export const de: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.expiry": "Drops verfallen nach 7 Tagen, sofern nicht permanent.",
   "doc.limits.lifecycle.grace": "Verfallene Drops können vom Besitzer 30 Tage lang erneuert werden.",
   "doc.limits.lifecycle.purge": "Nach 30 Tagen werden verfallene Drops endgültig gelöscht und sind nicht wiederherstellbar.",
+  "view.agentLink": "Agenten-Link kopieren (Raw-Content-URL)",
+  "view.toast.agentLinkCopied": "Agenten-Link kopiert! Füge ihn deiner KI ein",
 };

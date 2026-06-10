@@ -317,4 +317,6 @@ export const fr: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.expiry": "Les drops expirent après 7 jours sauf s'ils sont permanents.",
   "doc.limits.lifecycle.grace": "Un drop expiré peut être renouvelé par son propriétaire pendant 30 jours.",
   "doc.limits.lifecycle.purge": "Après 30 jours, les drops expirés sont supprimés définitivement, sans récupération possible.",
+  "view.agentLink": "Copier le lien agent (URL du contenu brut)",
+  "view.toast.agentLinkCopied": "Lien agent copié ! Collez-le à votre IA",
 };

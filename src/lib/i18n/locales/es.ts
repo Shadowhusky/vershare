@@ -317,4 +317,6 @@ export const es: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.expiry": "Los drops caducan a los 7 días salvo que sean permanentes.",
   "doc.limits.lifecycle.grace": "El propietario puede renovar un drop caducado durante 30 días.",
   "doc.limits.lifecycle.purge": "Pasados 30 días, los drops caducados se eliminan para siempre y no se pueden recuperar.",
+  "view.agentLink": "Copiar enlace para agentes (URL de contenido crudo)",
+  "view.toast.agentLinkCopied": "¡Enlace para agentes copiado! Pégaselo a tu IA",
 };

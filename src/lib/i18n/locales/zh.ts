@@ -317,4 +317,6 @@ export const zh: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.expiry": "投放默认 7 天后过期，设为永久则不会过期。",
   "doc.limits.lifecycle.grace": "过期的投放在 30 天内可由所有者续期恢复。",
   "doc.limits.lifecycle.purge": "超过 30 天后，过期投放将被永久删除，无法恢复。",
+  "view.agentLink": "复制 AI 助手链接（原始内容 URL）",
+  "view.toast.agentLinkCopied": "AI 链接已复制！粘贴给你的 AI 助手吧",
 };
