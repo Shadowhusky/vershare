@@ -1,0 +1,40 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "vershare",
+  "main": "worker.js",
+  "triggers": {
+    "crons": ["0 3 * * *"]
+  },
+  "compatibility_date": "2026-05-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "account_id": "31c17ebe287229213316608e4ef93f80",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    { "pattern": "vershare.uk", "custom_domain": true },
+    { "pattern": "www.vershare.uk", "custom_domain": true }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vershare-db",
+      "database_id": "5aefb988-8cd0-4928-93f5-dacaa72059fc",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "vershare-files"
+    }
+  ],
+  "vars": {
+    "NEXTJS_ENV": "production",
+    "NEXT_PUBLIC_GOOGLE_CLIENT_ID": "770946772146-smicnvrsd97om4i9q9kkh4l917j0eiqv.apps.googleusercontent.com"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
