@@ -83,10 +83,20 @@ function ShareTabContent({ id }: { id: string }) {
   return <ShareView share={share} />;
 }
 
-export default function Workspace({ children }: { children: ReactNode }) {
+interface WorkspaceProps {
+  children: ReactNode;
+  className?: string;
+  onActiveChange?: (id: string | null) => void;
+}
+
+export default function Workspace({ children, className, onActiveChange }: WorkspaceProps) {
   const t = useT();
   const [tabs, setTabs] = useState<ShareTab[]>([]);
   const [active, setActive] = useState<string>("new");
+
+  useEffect(() => {
+    onActiveChange?.(active === "new" ? null : active);
+  }, [active, onActiveChange]);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -107,11 +117,26 @@ export default function Workspace({ children }: { children: ReactNode }) {
     if (active === id) setActive("new");
   };
 
+  const cycle = (dir: 1 | -1) => {
+    const order = ["new", ...tabs.map((tab) => tab.id)];
+    const next = order[(order.indexOf(active) + dir + order.length) % order.length];
+    setActive(next);
+  };
+
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className={className ?? "space-y-4 sm:space-y-6"}>
       {tabs.length > 0 && (
-        <div className="flex items-end gap-1 overflow-x-auto border-b-2 border-pixel-green/20">
+        <div
+          role="tablist"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") cycle(1);
+            if (e.key === "ArrowLeft") cycle(-1);
+          }}
+          className="flex items-end gap-1 overflow-x-auto border-b-2 border-pixel-green/20 sticky top-0 z-20 bg-pixel-darker mb-4 sm:mb-6"
+        >
           <button
+            role="tab"
+            aria-selected={active === "new"}
             onClick={() => setActive("new")}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-[family-name:var(--font-pixel-stack)] shrink-0 ${
               active === "new" ? "tab-active" : "tab-inactive"
@@ -128,6 +153,8 @@ export default function Workspace({ children }: { children: ReactNode }) {
               }`}
             >
               <button
+                role="tab"
+                aria-selected={active === tab.id}
                 onClick={() => setActive(tab.id)}
                 className="px-3 py-2 text-xs truncate"
                 title={tab.title}

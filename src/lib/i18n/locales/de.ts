@@ -319,4 +319,9 @@ export const de: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.purge": "Nach 30 Tagen werden verfallene Drops endgültig gelöscht und sind nicht wiederherstellbar.",
   "view.agentLink": "Agenten-Link kopieren (Raw-Content-URL)",
   "view.toast.agentLinkCopied": "Agenten-Link kopiert! Füge ihn deiner KI ein",
+  "recents.empty.title": "NOCH KEINE DROPS",
+  "recents.empty.body": "Deine geteilten Drops erscheinen hier.",
+  "recents.showAll": "ALLE ANZEIGEN ({count})",
+  "recents.now": "jetzt",
+  "recents.expired": "ABGELAUFEN",
 };

@@ -7,7 +7,7 @@ interface ShareTypePieChartProps {
 }
 
 const COLORS: Record<string, string> = {
-  text: "#39ff14",
+  text: "#7ee787",
   markdown: "#00d4ff",
   code: "#ffb000",
   file: "#ff6ec7",
@@ -60,7 +60,7 @@ export default function ShareTypePieChart({ data }: ShareTypePieChartProps) {
             stroke="none"
           >
             {chartData.map((entry) => (
-              <Cell key={entry.name} fill={COLORS[entry.name] || "#39ff14"} />
+              <Cell key={entry.name} fill={COLORS[entry.name] || "#7ee787"} />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />

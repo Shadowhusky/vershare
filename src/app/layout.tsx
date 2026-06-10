@@ -137,8 +137,8 @@ export default async function RootLayout({
           <div className="relative z-10 h-dvh flex flex-col overflow-hidden">
             <Header />
 
-            <main className="flex-1 overflow-y-auto px-3 py-4 sm:px-8 sm:py-6">
-              <div className="max-w-4xl mx-auto">{children}</div>
+            <main className="flex-1 min-h-0 overflow-y-auto px-3 py-4 sm:px-8 sm:py-6">
+              <div className="mx-auto h-full max-w-6xl">{children}</div>
             </main>
 
             <Footer />

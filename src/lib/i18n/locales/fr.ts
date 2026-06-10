@@ -319,4 +319,9 @@ export const fr: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.purge": "Après 30 jours, les drops expirés sont supprimés définitivement, sans récupération possible.",
   "view.agentLink": "Copier le lien agent (URL du contenu brut)",
   "view.toast.agentLinkCopied": "Lien agent copié ! Collez-le à votre IA",
+  "recents.empty.title": "AUCUN DROP",
+  "recents.empty.body": "Vos drops partagés apparaîtront ici.",
+  "recents.showAll": "TOUT AFFICHER ({count})",
+  "recents.now": "maintenant",
+  "recents.expired": "EXPIRÉ",
 };

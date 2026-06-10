@@ -319,4 +319,9 @@ export const ja: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.purge": "30日を過ぎた期限切れドロップは完全に削除され、復元できません。",
   "view.agentLink": "エージェント用リンクをコピー（生コンテンツURL）",
   "view.toast.agentLinkCopied": "エージェント用リンクをコピーしました！AIに貼り付けよう",
+  "recents.empty.title": "まだドロップなし",
+  "recents.empty.body": "共有したドロップがここに表示されます。",
+  "recents.showAll": "すべて表示（{count}）",
+  "recents.now": "たった今",
+  "recents.expired": "期限切れ",
 };

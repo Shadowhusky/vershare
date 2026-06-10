@@ -43,8 +43,8 @@ export default function SharesOverTimeChart({ data }: SharesOverTimeChartProps) 
         <AreaChart data={formatted}>
           <defs>
             <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#39ff14" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#39ff14" stopOpacity={0} />
+              <stop offset="5%" stopColor="#7ee787" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#7ee787" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(57,255,20,0.1)" />
@@ -63,7 +63,7 @@ export default function SharesOverTimeChart({ data }: SharesOverTimeChartProps) 
           <Area
             type="monotone"
             dataKey="count"
-            stroke="#39ff14"
+            stroke="#7ee787"
             strokeWidth={2}
             fill="url(#greenGrad)"
           />

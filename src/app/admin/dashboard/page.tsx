@@ -105,7 +105,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm text-glow">
+        <h1 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm">
           DASHBOARD
         </h1>
         <div className="flex items-center gap-2">

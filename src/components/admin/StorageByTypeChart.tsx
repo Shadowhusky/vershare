@@ -16,7 +16,7 @@ interface StorageByTypeChartProps {
 }
 
 const COLORS: Record<string, string> = {
-  text: "#39ff14",
+  text: "#7ee787",
   markdown: "#00d4ff",
   code: "#ffb000",
   file: "#ff6ec7",
@@ -48,7 +48,7 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 export default function StorageByTypeChart({ data }: StorageByTypeChartProps) {
   const chartData = Object.entries(data)
     .filter(([, bytes]) => bytes > 0)
-    .map(([type, bytes]) => ({ type, bytes, fill: COLORS[type] || "#39ff14" }));
+    .map(([type, bytes]) => ({ type, bytes, fill: COLORS[type] || "#7ee787" }));
 
   if (chartData.length === 0) {
     return (

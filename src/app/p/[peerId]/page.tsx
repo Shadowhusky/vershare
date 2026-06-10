@@ -14,7 +14,7 @@ export default async function P2PReceivePage({ params }: Props) {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h2 className="font-[family-name:var(--font-pixel-stack)] text-pixel-purple text-sm text-glow-cyan">
+        <h2 className="font-[family-name:var(--font-pixel-stack)] text-pixel-purple text-sm">
           &gt; P2P DROP INCOMING
         </h2>
         <p className="text-pixel-gray text-xs">

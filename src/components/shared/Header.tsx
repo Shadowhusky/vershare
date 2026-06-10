@@ -80,7 +80,7 @@ export default function Header() {
   return (
     <>
       <header className="shrink-0 border-b-2 border-pixel-green/20 px-3 py-3 sm:px-8">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
           <a href="/" className="flex items-center gap-2 sm:gap-3 group">
             <img
               src="/assets/logo.png"
@@ -113,7 +113,7 @@ export default function Header() {
               {showTip && (
                 <div className="absolute top-full right-0 mt-2 w-60 z-40">
                   <div className="absolute -top-[6px] right-[10px] w-3 h-3 bg-pixel-darker border-l-2 border-t-2 border-pixel-green rotate-45" />
-                  <div className="border-2 border-pixel-green bg-pixel-darker p-3 shadow-[0_0_16px_rgba(57,255,20,0.25)]">
+                  <div className="border-2 border-pixel-green bg-pixel-darker p-3 shadow-[0_0_12px_var(--pixel-accent-15)]">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-pixel-green text-xs font-[family-name:var(--font-pixel-stack)] leading-relaxed">
                         {t("header.tip.title")}

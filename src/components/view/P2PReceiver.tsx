@@ -150,7 +150,7 @@ export default function P2PReceiver({ peerId }: P2PReceiverProps) {
           {status === "complete" && (
             <>
               <Check size={14} className="text-pixel-green" />
-              <span className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm text-glow">
+              <span className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm">
                 {t("view.p2p.received")}
               </span>
             </>
@@ -185,7 +185,7 @@ export default function P2PReceiver({ peerId }: P2PReceiverProps) {
       {status === "complete" && metadata && (
         <div className="space-y-4">
           {metadata.title && (
-            <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-base text-glow">
+            <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-base">
               {metadata.title}
             </h3>
           )}
@@ -251,7 +251,7 @@ export default function P2PReceiver({ peerId }: P2PReceiverProps) {
                 <a
                   href={fileBlobUrl}
                   download={metadata.fileName || "file"}
-                  className="px-6 py-3 border-2 border-pixel-green text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm hover:bg-pixel-green/10 transition-all flex items-center gap-2 animate-pulse-glow"
+                  className="px-6 py-3 border-2 border-pixel-green text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm hover:bg-pixel-green/10 transition-all flex items-center gap-2"
                 >
                   <Download size={16} />
                   {t("view.file.download")}

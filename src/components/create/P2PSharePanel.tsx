@@ -176,7 +176,7 @@ export default function P2PSharePanel({
         {status === "sent" && (
           <>
             <Check size={14} className="text-pixel-green" />
-            <span className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm text-glow">
+            <span className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm">
               {t("create.p2p.complete")}
             </span>
           </>

@@ -234,7 +234,7 @@ export default function HelpWizard({ open, onClose, onRequestContent }: HelpWiza
             left: targetRect.left,
             width: targetRect.width,
             height: targetRect.height,
-            boxShadow: "0 0 20px rgba(57,255,20,0.3), inset 0 0 20px rgba(57,255,20,0.05)",
+            boxShadow: "0 0 20px rgba(126,231,135,0.22), inset 0 0 20px rgba(126,231,135,0.05)",
           }}
         />
       )}
@@ -286,7 +286,7 @@ export default function HelpWizard({ open, onClose, onRequestContent }: HelpWiza
         </div>
 
         {/* Title */}
-        <h4 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-xs text-glow">
+        <h4 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-xs">
           {t(current.title)}
         </h4>
 

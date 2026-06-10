@@ -7,7 +7,7 @@ interface RetroProgressProps {
 }
 
 const COLORS = {
-  green: { bar: "bg-pixel-green", border: "border-pixel-green/30", text: "text-pixel-green", shadow: "shadow-[0_0_8px_rgba(57,255,20,0.3)]" },
+  green: { bar: "bg-pixel-green", border: "border-pixel-green/30", text: "text-pixel-green", shadow: "shadow-[0_0_8px_var(--pixel-accent-25)]" },
   amber: { bar: "bg-pixel-amber", border: "border-pixel-amber/30", text: "text-pixel-amber", shadow: "shadow-[0_0_8px_rgba(255,176,0,0.3)]" },
   cyan: { bar: "bg-pixel-cyan", border: "border-pixel-cyan/30", text: "text-pixel-cyan", shadow: "shadow-[0_0_8px_rgba(0,212,255,0.3)]" },
   purple: { bar: "bg-pixel-purple", border: "border-pixel-purple/30", text: "text-pixel-purple", shadow: "shadow-[0_0_8px_rgba(176,0,255,0.3)]" },

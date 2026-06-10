@@ -41,7 +41,7 @@ export default function SharePreviewModal({ share, onClose }: SharePreviewModalP
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-xs text-glow mb-1">
+            <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-xs mb-1">
               {share.title || share.fileName || share.id}
             </h3>
             <div className="flex items-center gap-2 text-pixel-gray text-xs">

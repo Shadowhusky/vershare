@@ -177,7 +177,7 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
           {pendingCode ? (
             <div className="p-3 pixel-border bg-pixel-green/5 text-center">
               <p className="text-pixel-gray/50 text-xs mb-1">{t("auth.yourCode")}</p>
-              <p className="text-pixel-green font-[family-name:var(--font-pixel-stack)] text-lg text-glow tracking-widest">
+              <p className="text-pixel-green font-[family-name:var(--font-pixel-stack)] text-lg tracking-widest">
                 {pendingCode}
               </p>
             </div>

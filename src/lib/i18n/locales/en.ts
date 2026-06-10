@@ -319,6 +319,11 @@ export const en = {
   "doc.limits.lifecycle.purge": "After 30 days, expired drops are permanently deleted and cannot be recovered.",
   "view.agentLink": "Copy agent link (raw content URL)",
   "view.toast.agentLinkCopied": "Agent link copied! Paste it to your AI",
+  "recents.empty.title": "NO DROPS YET",
+  "recents.empty.body": "Your shared drops will show up here.",
+  "recents.showAll": "SHOW ALL ({count})",
+  "recents.now": "now",
+  "recents.expired": "EXPIRED",
 } as const;
 
 export type TranslationKey = keyof typeof en;

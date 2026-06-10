@@ -25,7 +25,7 @@ export default function ShareLinkBox({ shareId }: { shareId: string }) {
 
   return (
     <div className="pixel-border p-4 bg-pixel-green/5">
-      <p className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm mb-3 text-glow">
+      <p className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm mb-3">
         &gt; {t("common.shareLink.complete")}
       </p>
       <div className="flex gap-2">

@@ -43,7 +43,7 @@ export default function FileView({ share }: { share: ShareMetadata }) {
         <a
           href={rawUrl}
           download={share.fileName}
-          className="shrink-0 px-6 py-3 border-2 border-pixel-green text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm hover:bg-pixel-green/10 transition-all flex items-center gap-2 animate-pulse-glow"
+          className="shrink-0 px-6 py-3 border-2 border-pixel-green text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm hover:bg-pixel-green/10 transition-all flex items-center gap-2"
         >
           <Download size={16} />
           {t("view.file.download")}

@@ -38,7 +38,7 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-sm mx-auto space-y-6">
       <div className="text-center mb-8">
-        <h1 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-glow text-sm mb-2">
+        <h1 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm mb-2">
           ADMIN LOGIN
         </h1>
         <p className="text-pixel-gray text-xs">

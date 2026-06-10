@@ -83,9 +83,9 @@ export default function WeeklyComparisonChart({ thisWeek, lastWeek }: WeeklyComp
           <Line
             type="monotone"
             dataKey="thisWeek"
-            stroke="#39ff14"
+            stroke="#7ee787"
             strokeWidth={2}
-            dot={{ fill: "#39ff14", r: 3 }}
+            dot={{ fill: "#7ee787", r: 3 }}
           />
           <Line
             type="monotone"

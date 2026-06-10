@@ -83,12 +83,12 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           {share.title && (
-            <h2 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-base text-glow mb-2">
+            <h2 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-base mb-2">
               {share.title}
             </h2>
           )}
           <div className="flex items-center gap-3 text-pixel-gray text-sm flex-wrap">
-            <span className="flex items-center gap-1 text-pixel-amber">
+            <span className="flex items-center gap-1 text-pixel-gray">
               {meta.icon} {t(meta.labelKey)}
             </span>
             <span>·</span>
@@ -160,7 +160,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm text-glow animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm animate-fade-in">
           {toast}
         </div>
       )}

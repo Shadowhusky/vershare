@@ -319,4 +319,9 @@ export const zh: Record<TranslationKey, string> = {
   "doc.limits.lifecycle.purge": "超过 30 天后，过期投放将被永久删除，无法恢复。",
   "view.agentLink": "复制 AI 助手链接（原始内容 URL）",
   "view.toast.agentLinkCopied": "AI 链接已复制！粘贴给你的 AI 助手吧",
+  "recents.empty.title": "还没有投放",
+  "recents.empty.body": "你分享的投放会显示在这里。",
+  "recents.showAll": "显示全部（{count}）",
+  "recents.now": "刚刚",
+  "recents.expired": "已过期",
 };

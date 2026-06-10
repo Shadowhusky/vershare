@@ -24,8 +24,7 @@ import SmartDropZone, { SmartDetectResult } from "./SmartDropZone";
 import ShareLinkBox from "@/components/shared/ShareLinkBox";
 import P2PSharePanel from "./P2PSharePanel";
 import { ShareType } from "@/lib/types";
-import { useUploadHistory, HistoryItem } from "@/hooks/use-upload-history";
-import { formatFileSize } from "@/lib/constants";
+import { HistoryItem } from "@/hooks/use-upload-history";
 import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
@@ -38,7 +37,7 @@ const TABS: { type: ShareType; labelKey: TranslationKey; icon: React.ReactNode }
   { type: "image", labelKey: "create.tab.img", icon: <ImageIcon size={14} /> },
 ];
 
-export default function CreatePanel() {
+export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryItem) => void }) {
   const t = useT();
   const [mode, setMode] = useState<"smart" | "manual">("smart");
   const [activeTab, setActiveTab] = useState<ShareType>("text");
@@ -59,7 +58,6 @@ export default function CreatePanel() {
   const [permanent, setPermanent] = useState(false);
   const { email: userEmail, verified: emailVerified, openAuth, logout } = useAuth();
   const wantsPermanentRef = useRef(false);
-  const historyListRef = useRef<HTMLDivElement>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shareId, setShareId] = useState<string | null>(null);
@@ -67,7 +65,6 @@ export default function CreatePanel() {
   const [toast, setToast] = useState<string | null>(null);
 
   const [demoText, setDemoText] = useState<string | null>(null);
-  const { history, addItem } = useUploadHistory(userEmail);
 
   // Listen for wizard demo injection
   useEffect(() => {
@@ -79,24 +76,6 @@ export default function CreatePanel() {
     window.addEventListener("vershare:inject-demo", handler);
     return () => window.removeEventListener("vershare:inject-demo", handler);
   }, [mode, t]);
-
-  // Let the recents list use the remaining viewport height (min 150px,
-  // 56px breathing room for the footer). Measured scroll-invariantly —
-  // rect.top + scrollTop is the list's fixed offset in the page — so the
-  // height never changes mid-scroll.
-  useEffect(() => {
-    const el = historyListRef.current;
-    if (!el) return;
-    const main = document.querySelector("main");
-    const fit = () => {
-      const offsetInPage = el.getBoundingClientRect().top + (main?.scrollTop || 0);
-      const available = window.innerHeight - offsetInPage - 56;
-      el.style.maxHeight = `${Math.max(150, available)}px`;
-    };
-    fit();
-    window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
-  }, [history.length]);
 
   // Complete a pending PERMANENT selection once the user finishes auth
   useEffect(() => {
@@ -199,8 +178,7 @@ export default function CreatePanel() {
       }
       setTimeout(() => setToast(null), 3000);
 
-      // Record in history
-      addItem({
+      onCreated({
         share_id: data.id,
         share_type: data.type,
         title: data.title || null,
@@ -462,54 +440,9 @@ export default function CreatePanel() {
         </div>
       )}
 
-      {/* Upload history */}
-      {history.length > 0 && (
-        <div className="space-y-2">
-          <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-gray/50 text-xs">
-            {t("create.recentDrops")}
-          </h3>
-          <div
-            ref={historyListRef}
-            className="space-y-1 overflow-y-auto"
-            style={{ maxHeight: "150px" }}
-          >
-            {history.slice(0, 10).map((h) => (
-              <button
-                key={h.share_id}
-                onClick={() =>
-                  window.dispatchEvent(
-                    new CustomEvent("vershare:open-share", {
-                      detail: { id: h.share_id, title: h.title || h.file_name || h.share_id },
-                    })
-                  )
-                }
-                className="w-full flex items-center justify-between px-3 py-2 pixel-border bg-pixel-dark/30 hover:bg-pixel-dark/60 transition-colors text-sm group text-left"
-              >
-                <div className="flex items-center gap-2 truncate">
-                  <span className="text-pixel-amber font-[family-name:var(--font-pixel-stack)] text-[10px] w-10 shrink-0">
-                    {h.share_type.toUpperCase().slice(0, 4)}
-                  </span>
-                  <span className="text-pixel-cyan truncate">
-                    {h.title || h.file_name || h.share_id}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0 text-pixel-gray/40">
-                  {h.file_size && <span>{formatFileSize(h.file_size)}</span>}
-                  {h.expires_at && (
-                    <span className="text-pixel-amber">
-                      <Clock size={10} />
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm text-glow animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm animate-fade-in">
           {toast}
         </div>
       )}

@@ -18,9 +18,9 @@ const colorMap = {
 };
 
 const glowMap = {
-  green: "text-glow",
-  cyan: "text-glow-cyan",
-  amber: "text-glow-amber",
+  green: "",
+  cyan: "",
+  amber: "",
   pink: "",
   purple: "",
 };
