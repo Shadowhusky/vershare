@@ -29,18 +29,21 @@
 
 ## 📸 Tour
 
-| Home | Share view |
-|------|-----------|
-| ![Home](public/assets/screenshots/home.png) | ![Share view](public/assets/screenshots/share-view.png) |
+**Home** — drop something, get a link 🍃
+
+![Home](public/assets/screenshots/home.png)
+
+**Share view** — code with syntax highlighting, markdown, media & files
+
+![Share view](public/assets/screenshots/share-view.png)
 
 **Light theme** — warm paper, same pixels ☀️
 
 ![Light theme](public/assets/screenshots/home-light.png)
 
-<p align="center">
-  <img src="public/assets/screenshots/mobile.png" width="300" alt="Mobile" /><br/>
-  <sub>pocket-sized too 📱</sub>
-</p>
+**Mobile** — pocket-sized in both moods 📱
+
+![Mobile](public/assets/screenshots/mobile-duo.png)
 
 ## ⚡ Share from anywhere
 
