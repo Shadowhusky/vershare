@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { HelpCircle, X, Github } from "lucide-react";
 import HelpWizard from "./HelpWizard";
 import ThemeToggle from "./ThemeToggle";
@@ -11,6 +12,9 @@ const LS_KEY = "vershare_wizard_seen";
 
 export default function Header() {
   const t = useT();
+  const pathname = usePathname();
+  // The guided tour anchors elements that only exist on the home page
+  const helpAvailable = pathname === "/";
   const [showHelp, setShowHelp] = useState(false);
   const [showTip, setShowTip] = useState(false);
 
@@ -82,6 +86,7 @@ export default function Header() {
             <ThemeToggle />
             <LanguageSwitcher />
             <ProfileMenu />
+            {helpAvailable && (
             <div className="relative">
               <button
                 onClick={openHelp}
@@ -117,6 +122,7 @@ export default function Header() {
                 </div>
               )}
             </div>
+            )}
             <a
               href="https://github.com/Shadowhusky/vershare"
               target="_blank"
