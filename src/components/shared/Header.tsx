@@ -56,6 +56,17 @@ export default function Header() {
     markSeen();
   };
 
+  // Auto-dismiss the tip after a comfortable reading window — long enough to
+  // read the two lines, short enough not to linger. The ? button stays.
+  useEffect(() => {
+    if (!showTip) return;
+    const timer = setTimeout(() => {
+      setShowTip(false);
+      markSeen();
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, [showTip]);
+
   const openHelp = () => {
     setShowTip(false);
     setShowHelp(true);
