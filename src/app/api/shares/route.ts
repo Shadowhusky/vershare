@@ -76,15 +76,13 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const buffer = Buffer.from(await file.arrayBuffer());
-
       const share = await createShare({
         type,
         title: title || undefined,
         fileName: file.name,
         fileSize: file.size,
         mimeType: inferMimeType(file.name, file.type),
-        buffer,
+        data: file,
         permanent: wantsPermanent,
         createdBy: userEmail || undefined,
       });

@@ -19,7 +19,7 @@
 ## ✨ What it does
 
 - **Smart Drop** — paste or drop anything; text, markdown and code are auto-detected and rendered with live previews
-- **Files & media** — chunked uploads up to 10 GB with an account (100 MB anonymous), streamed with range support
+- **Files & media** — chunked uploads up to 10 GB with an account (64 MB anonymous), streamed with range support
 - **P2P mode** — browser-to-browser over WebRTC; nothing ever touches the server
 - **Auto-expiry** — drops vanish after 7 days; sign in (email or Google) to make them permanent, extend or renew them
 - **In-page tabs** — open your recent drops side by side without leaving the page

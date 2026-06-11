@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createShare } from "@/lib/shares";
 import { getBaseUrl } from "@/lib/url";
+import { inferMimeType } from "@/lib/mime";
 
 /**
  * POST /api/drop — Agent-friendly share endpoint.
@@ -31,14 +32,13 @@ export async function POST(request: NextRequest) {
         return new NextResponse("Error: provide type=file|image and file", { status: 400 });
       }
 
-      const buffer = Buffer.from(await file.arrayBuffer());
       const share = await createShare({
         type,
         title: title || undefined,
         fileName: file.name,
         fileSize: file.size,
-        mimeType: file.type,
-        buffer,
+        mimeType: inferMimeType(file.name, file.type),
+        data: file,
       });
 
       return respond(base, share.id, format);

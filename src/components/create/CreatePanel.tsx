@@ -29,7 +29,7 @@ import { ShareType } from "@/lib/types";
 import { HistoryItem } from "@/hooks/use-upload-history";
 import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
-import { MAX_FILE_SIZE, formatFileSize } from "@/lib/constants";
+import { MAX_FILE_SIZE, UPLOAD_PART_SIZE, formatFileSize } from "@/lib/constants";
 import { uploadFileMultipart, UploadCanceledError } from "@/lib/multipart-upload";
 import { canCompressVideo, compressVideo, cleanupCompressTmp, CompressionCanceled } from "@/lib/video-compress";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
@@ -214,8 +214,13 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
     setError(null);
 
     try {
-      // Chunked path for files past the single-request ceiling
-      if (payload.file && payload.file.size > MAX_FILE_SIZE) {
+      // Chunked path: required past the single-request ceiling, and preferred
+      // for signed-in users beyond one chunk — big single bodies blow the
+      // Worker memory limit server-side (Cloudflare 1102)
+      const chunked =
+        payload.file &&
+        (payload.file.size > MAX_FILE_SIZE || (userEmail && payload.file.size > UPLOAD_PART_SIZE));
+      if (payload.file && chunked) {
         if (!userEmail) {
           openAuth();
           throw new Error(t("create.upload.signInRequired"));
@@ -258,12 +263,11 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
         });
       }
 
+      // Worker-limit failures return an HTML error page, not JSON
+      const data = (await res.json().catch(() => ({}))) as Record<string, any>;
       if (!res.ok) {
-        const data = await res.json() as Record<string, any>;
-        throw new Error(data.error || t("create.error.createFailed"));
+        throw new Error(data.error || `${t("create.error.createFailed")} (${res.status})`);
       }
-
-      const data = await res.json() as Record<string, any>;
       await finishCreate(data, payload);
     } catch (err) {
       if (!(err instanceof UploadCanceledError)) {

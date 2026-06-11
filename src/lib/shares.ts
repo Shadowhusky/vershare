@@ -22,7 +22,7 @@ interface CreateFileShareInput {
   fileName: string;
   fileSize: number;
   mimeType: string;
-  buffer: Buffer;
+  data: ArrayBuffer | Uint8Array | Blob;
   permanent?: boolean;
   createdBy?: string;
 }
@@ -70,7 +70,7 @@ export async function createShare(
     );
   }
 
-  const filePath = await saveUploadedFile(id, fileInput.fileName, fileInput.buffer);
+  const filePath = await saveUploadedFile(id, fileInput.fileName, fileInput.data);
 
   const share: ShareMetadata = {
     id,

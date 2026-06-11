@@ -97,7 +97,9 @@ export async function readShareMetadata(
 export async function saveUploadedFile(
   id: string,
   fileName: string,
-  data: ArrayBuffer | Uint8Array
+  // Blob streams into R2 without copying — buffering large files in Worker
+  // memory exceeds the 128MB isolate limit (Cloudflare error 1102)
+  data: ArrayBuffer | Uint8Array | Blob
 ): Promise<string> {
   const safeId = sanitizeId(id);
   const safeFileName = fileName.split("/").pop()!.split("\\").pop()!;

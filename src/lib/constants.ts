@@ -8,7 +8,9 @@ export const EXPIRED_RETENTION_DAYS = 30;
 export const EXPIRED_RETENTION_MS = EXPIRED_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 export const MAX_TEXT_SIZE = 10 * 1024 * 1024; // 10MB
-export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB (Workers request-body ceiling, single request)
+// Single-request (anonymous) cap. formData parsing buffers the body in Worker
+// memory; 1102 errors start around ~80MB, so keep solid headroom.
+export const MAX_FILE_SIZE = 64 * 1024 * 1024; // 64MB
 export const MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB
 
 // Per-account cap on active (non-expired) storage. Expired drops don't count.
