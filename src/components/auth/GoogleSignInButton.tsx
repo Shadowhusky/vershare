@@ -91,13 +91,15 @@ export default function GoogleSignInButton({ onSuccess, onError }: GoogleSignInB
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-center min-h-[44px] items-center">
-        <div ref={containerRef} />
-        {!ready && (
-          <span className="text-pixel-gray/50 text-xs font-[family-name:var(--font-pixel-stack)] animate-pulse">
-            {t("auth.loadingGoogle")}
-          </span>
-        )}
+      <div className="flex justify-center">
+        <div className="relative h-10 w-[300px]">
+          <div ref={containerRef} className="absolute inset-0 flex items-center justify-center" />
+          {!ready && (
+            <span className="absolute inset-0 flex items-center justify-center text-pixel-gray/50 text-xs font-[family-name:var(--font-pixel-stack)] animate-pulse pointer-events-none">
+              {t("auth.loadingGoogle")}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <div className="flex-1 border-t border-pixel-green/20" />

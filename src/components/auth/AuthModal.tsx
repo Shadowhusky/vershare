@@ -155,8 +155,8 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
   // Verify step
   if (step === "verify") {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={close}>
-        <div className="pixel-border bg-pixel-darker p-6 max-w-sm w-full mx-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-overlay-in" onClick={close}>
+        <div className="pixel-border bg-pixel-darker p-6 max-w-sm w-full mx-4 space-y-4 animate-modal-in" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between">
             <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-amber text-sm">
               {t("auth.verifyEmail")}
@@ -226,8 +226,8 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
 
   // Credentials step
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={close}>
-      <div className="pixel-border bg-pixel-darker p-6 max-w-sm w-full mx-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-overlay-in" onClick={close}>
+      <div className="pixel-border bg-pixel-darker p-6 max-w-sm w-full mx-4 space-y-4 animate-modal-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-sm">
             {tab === "login" ? t("auth.login") : t("auth.register")}

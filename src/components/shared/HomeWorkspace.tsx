@@ -11,8 +11,20 @@ import { useT } from "@/lib/i18n";
 export default function HomeWorkspace() {
   const t = useT();
   const { email } = useAuth();
-  const { history, loading, addItem } = useUploadHistory(email);
+  const { history, loading, addItem, updateItem } = useUploadHistory(email);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  const changeExpiry = async (shareId: string, expiry: "extend" | "permanent") => {
+    const res = await fetch(`/api/shares/${shareId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ expiry }),
+    });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { expiresAt: string | null };
+    updateItem(shareId, { expires_at: data.expiresAt });
+    return true;
+  };
 
   const sidebarHiddenOnMobile = !loading && history.length === 0;
 
@@ -38,7 +50,13 @@ export default function HomeWorkspace() {
           sidebarHiddenOnMobile ? "hidden lg:flex" : "flex"
         }`}
       >
-        <RecentDrops history={history} loading={loading} activeId={activeId} />
+        <RecentDrops
+          history={history}
+          loading={loading}
+          activeId={activeId}
+          canEdit={!!email}
+          onChangeExpiry={changeExpiry}
+        />
       </aside>
     </div>
   );

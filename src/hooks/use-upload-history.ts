@@ -90,5 +90,18 @@ export function useUploadHistory(userEmail: string | null) {
     [userEmail]
   );
 
-  return { history, loading, addItem };
+  const updateItem = useCallback(
+    (shareId: string, patch: Partial<HistoryItem>) => {
+      setHistory((prev) => {
+        const next = prev.map((h) => (h.share_id === shareId ? { ...h, ...patch } : h));
+        if (!userEmail) {
+          setLocalHistory(next);
+        }
+        return next;
+      });
+    },
+    [userEmail]
+  );
+
+  return { history, loading, addItem, updateItem };
 }

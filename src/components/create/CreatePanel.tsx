@@ -348,7 +348,7 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
       ) : (
         <>
           {/* Tab bar */}
-          <div className="flex border-b-2 border-pixel-green/20 overflow-x-auto">
+          <div className="flex border-b-2 border-pixel-green/20 overflow-x-auto mb-4">
             {TABS.map((tab) => (
               <button
                 key={tab.type}

@@ -98,14 +98,15 @@ export default async function RootLayout({
   const locale = isLocale(cookieLocale)
     ? cookieLocale
     : parseAcceptLanguage((await headers()).get("accept-language"));
+  const theme = cookieStore.get("vershare_theme")?.value === "light" ? "light" : undefined;
 
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} data-theme={theme} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('vershare_theme')==='light')document.documentElement.dataset.theme='light'}catch(e){}",
+              "try{if(localStorage.getItem('vershare_theme')==='light'&&!document.cookie.includes('vershare_theme=')){document.documentElement.dataset.theme='light';document.cookie='vershare_theme=light; path=/; max-age=31536000; samesite=lax'}}catch(e){}",
           }}
         />
         <script

@@ -10,8 +10,7 @@ export default function ThemeToggle() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
-    const saved = localStorage.getItem(THEME_KEY);
-    if (saved === "light") setTheme("light");
+    if (document.documentElement.dataset.theme === "light") setTheme("light");
   }, []);
 
   const toggle = () => {
@@ -23,6 +22,7 @@ export default function ThemeToggle() {
       delete document.documentElement.dataset.theme;
     }
     localStorage.setItem(THEME_KEY, next);
+    document.cookie = `${THEME_KEY}=${next}; path=/; max-age=31536000; samesite=lax`;
   };
 
   return (

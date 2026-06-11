@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Clock } from "lucide-react";
+import { Clock, Infinity as InfinityIcon, RotateCcw, Loader2 } from "lucide-react";
 import { HistoryItem } from "@/hooks/use-upload-history";
 import { formatFileSize } from "@/lib/constants";
 import { useT } from "@/lib/i18n";
@@ -23,9 +23,11 @@ interface RecentDropsProps {
   history: HistoryItem[];
   loading: boolean;
   activeId: string | null;
+  canEdit: boolean;
+  onChangeExpiry: (shareId: string, expiry: "extend" | "permanent") => Promise<boolean>;
 }
 
-export default function RecentDrops({ history, loading, activeId }: RecentDropsProps) {
+export default function RecentDrops({ history, loading, activeId, canEdit, onChangeExpiry }: RecentDropsProps) {
   const t = useT();
   const [showAll, setShowAll] = useState(false);
 
@@ -70,12 +72,12 @@ export default function RecentDrops({ history, loading, activeId }: RecentDropsP
         {/* Desktop shows the whole history (pane scrolls); mobile previews then expands in flow */}
         <div className="hidden lg:block space-y-1">
           {history.map((h) => (
-            <Row key={h.share_id} item={h} active={activeId === h.share_id} onOpen={openShare} />
+            <Row key={h.share_id} item={h} active={activeId === h.share_id} onOpen={openShare} canEdit={canEdit} onChangeExpiry={onChangeExpiry} />
           ))}
         </div>
         <div className="lg:hidden space-y-1">
           {visible.map((h) => (
-            <Row key={h.share_id} item={h} active={activeId === h.share_id} onOpen={openShare} />
+            <Row key={h.share_id} item={h} active={activeId === h.share_id} onOpen={openShare} canEdit={canEdit} onChangeExpiry={onChangeExpiry} />
           ))}
           {history.length > MOBILE_PREVIEW_COUNT && !showAll && (
             <button
@@ -95,23 +97,45 @@ function Row({
   item,
   active,
   onOpen,
+  canEdit,
+  onChangeExpiry,
 }: {
   item: HistoryItem;
   active: boolean;
   onOpen: (h: HistoryItem) => void;
+  canEdit: boolean;
+  onChangeExpiry: (shareId: string, expiry: "extend" | "permanent") => Promise<boolean>;
 }) {
   const t = useT();
+  const [busy, setBusy] = useState<"extend" | "permanent" | null>(null);
+  const [failed, setFailed] = useState(false);
   const expired = !!item.expires_at && new Date(item.expires_at) < new Date();
 
+  const change = async (expiry: "extend" | "permanent") => {
+    setBusy(expiry);
+    setFailed(false);
+    const ok = await onChangeExpiry(item.share_id, expiry).catch(() => false);
+    setBusy(null);
+    if (!ok) {
+      setFailed(true);
+      setTimeout(() => setFailed(false), 2500);
+    }
+  };
+
+  const showActions = canEdit && item.expires_at !== null;
+
   return (
-    <button
+    <div className="relative group" data-recents-row>
+      <button
       onClick={() => onOpen(item)}
       aria-current={active || undefined}
       onKeyDown={(e) => {
-        if (e.key === "ArrowDown") (e.currentTarget.nextElementSibling as HTMLElement)?.focus();
-        if (e.key === "ArrowUp") (e.currentTarget.previousElementSibling as HTMLElement)?.focus();
+        if (e.key === "ArrowDown")
+          (e.currentTarget.closest("[data-recents-row]")?.nextElementSibling?.querySelector("button") as HTMLElement)?.focus();
+        if (e.key === "ArrowUp")
+          (e.currentTarget.closest("[data-recents-row]")?.previousElementSibling?.querySelector("button") as HTMLElement)?.focus();
       }}
-      className={`w-full px-3 py-2 text-left transition-colors ${
+      className={`w-full px-3 py-2 text-left transition-colors ${showActions ? "pr-[76px]" : ""} ${
         active
           ? "bg-[var(--pixel-accent-10)] shadow-[inset_3px_0_0_var(--pixel-green)]"
           : "hover:bg-[var(--pixel-accent-05)]"
@@ -145,5 +169,36 @@ function Row({
         )}
       </div>
     </button>
+      {showActions && (
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+          {failed ? (
+            <span className="font-[family-name:var(--font-pixel-stack)] text-[9px] text-pixel-pink px-1">
+              !
+            </span>
+          ) : busy ? (
+            <Loader2 size={12} className="animate-spin text-pixel-gray" />
+          ) : (
+            <>
+              <button
+                onClick={() => change("extend")}
+                title={t("view.expiry.extend")}
+                aria-label={t("view.expiry.extend")}
+                className="flex items-center gap-0.5 px-1.5 py-1 border border-pixel-amber/40 text-pixel-amber font-[family-name:var(--font-pixel-stack)] text-[9px] hover:bg-pixel-amber/10 transition-colors"
+              >
+                <RotateCcw size={9} />7D
+              </button>
+              <button
+                onClick={() => change("permanent")}
+                title={t("view.expiry.makePermanent")}
+                aria-label={t("view.expiry.makePermanent")}
+                className="px-1.5 py-1 border border-pixel-green/40 text-pixel-green font-[family-name:var(--font-pixel-stack)] text-[9px] hover:bg-pixel-green/10 transition-colors"
+              >
+                <InfinityIcon size={9} />
+              </button>
+            </>
+          )}
+        </span>
+      )}
+    </div>
   );
 }
