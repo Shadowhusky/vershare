@@ -71,19 +71,19 @@ export default function Header({ initialTheme }: { initialTheme: "dark" | "light
     <>
       <header className="shrink-0 border-b-2 border-pixel-green/20 px-3 py-3 sm:px-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 sm:gap-3 group">
+          <a href="/" className="flex items-center gap-2 sm:gap-3 group min-w-0 shrink">
             <img
               src="/assets/logo.png"
               alt="VerShare"
               width={28}
               height={28}
-              className="rounded-full! sm:w-9 sm:h-9"
+              className="rounded-full! sm:w-9 sm:h-9 shrink-0"
             />
-            <h1 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-glow text-xs sm:text-base tracking-wider">
+            <h1 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-glow text-xs sm:text-base tracking-wider whitespace-nowrap max-[379px]:hidden">
               VERSHARE
             </h1>
           </a>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <ThemeToggle initialTheme={initialTheme} />
             <LanguageSwitcher />
             <ProfileMenu />
@@ -128,14 +128,14 @@ export default function Header({ initialTheme }: { initialTheme: "dark" | "light
               href="https://github.com/Shadowhusky/vershare"
               target="_blank"
               rel="noopener"
-              className="text-pixel-gray hover:text-pixel-green transition-colors p-1"
+              className="hidden sm:block text-pixel-gray hover:text-pixel-green transition-colors p-1"
               aria-label="GitHub"
             >
               <Github size={18} />
             </a>
             <a
               href="/doc"
-              className="text-pixel-gray text-xs sm:text-sm hover:text-pixel-cyan transition-colors"
+              className="text-pixel-gray text-xs sm:text-sm hover:text-pixel-cyan transition-colors whitespace-nowrap"
             >
               {t("header.docs")}
             </a>

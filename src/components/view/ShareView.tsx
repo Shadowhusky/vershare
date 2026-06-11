@@ -144,24 +144,25 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      {/* Header — actions drop below the title on narrow screens so the
+          title never gets squeezed into a one-word column */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+        <div className="min-w-0">
           {share.title && (
-            <h2 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-base mb-2">
+            <h2 className="font-[family-name:var(--font-pixel-stack)] text-pixel-green text-base mb-2 break-words">
               {share.title}
             </h2>
           )}
-          <div className="flex items-center gap-3 text-pixel-gray text-sm flex-wrap">
-            <span className="flex items-center gap-1 text-pixel-gray">
+          <div className="flex items-center gap-x-3 gap-y-1.5 text-pixel-gray text-sm flex-wrap">
+            <span className="flex items-center gap-1 text-pixel-gray whitespace-nowrap">
               {meta.icon} {t(meta.labelKey)}
             </span>
             <span>·</span>
-            <span>{new Date(share.createdAt).toISOString().slice(0, 10)}</span>
+            <span className="whitespace-nowrap">{new Date(share.createdAt).toISOString().slice(0, 10)}</span>
             {expiresAt === null ? (
-              <><span>·</span><span className="flex items-center gap-1 text-pixel-green"><Infinity size={12} /> {t("view.permanent")}</span></>
+              <><span>·</span><span className="flex items-center gap-1 text-pixel-green whitespace-nowrap"><Infinity size={12} /> {t("view.permanent")}</span></>
             ) : expiresAt ? (
-              <><span>·</span><span className="flex items-center gap-1 text-pixel-amber"><Clock size={12} /> {t("view.expiresOn", { date: new Date(expiresAt).toISOString().slice(0, 10) })}</span></>
+              <><span>·</span><span className="flex items-center gap-1 text-pixel-amber whitespace-nowrap"><Clock size={12} /> {t("view.expiresOn", { date: new Date(expiresAt).toISOString().slice(0, 10) })}</span></>
             ) : null}
             {isOwner && expiresAt === null && (
               <>
@@ -169,7 +170,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
                 <button
                   onClick={() => updateExpiry("temporary")}
                   disabled={busy}
-                  className="text-pixel-amber/80 hover:text-pixel-amber underline underline-offset-2 disabled:opacity-50"
+                  className="text-pixel-amber/80 hover:text-pixel-amber underline underline-offset-2 disabled:opacity-50 whitespace-nowrap"
                 >
                   {t("view.expiry.makeTemporary")}
                 </button>
@@ -181,7 +182,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
                 <button
                   onClick={() => updateExpiry("extend")}
                   disabled={busy}
-                  className="text-pixel-amber/80 hover:text-pixel-amber underline underline-offset-2 disabled:opacity-50"
+                  className="text-pixel-amber/80 hover:text-pixel-amber underline underline-offset-2 disabled:opacity-50 whitespace-nowrap"
                 >
                   {t("view.expiry.extend")}
                 </button>
@@ -189,7 +190,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
                   <button
                     onClick={() => updateExpiry("permanent")}
                     disabled={busy}
-                    className="text-pixel-green/80 hover:text-pixel-green underline underline-offset-2 disabled:opacity-50"
+                    className="text-pixel-green/80 hover:text-pixel-green underline underline-offset-2 disabled:opacity-50 whitespace-nowrap"
                   >
                     {t("view.expiry.makePermanent")}
                   </button>
@@ -198,7 +199,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 order-first sm:order-none self-end sm:self-auto">
           <button
             onClick={handleCopy}
             className={`px-3 py-2 border text-sm font-[family-name:var(--font-pixel-stack)] transition-all ${

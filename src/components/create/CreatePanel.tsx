@@ -426,11 +426,11 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
       </div>
 
       {/* Expiry toggle */}
-      <div data-tour="expiry" className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div data-tour="expiry" className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => setPermanent(false)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-[family-name:var(--font-pixel-stack)] border transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-[family-name:var(--font-pixel-stack)] border transition-all whitespace-nowrap ${
               !permanent
                 ? "border-pixel-amber text-pixel-amber bg-pixel-amber/10"
                 : "border-pixel-gray/30 text-pixel-gray/50 hover:text-pixel-gray"
@@ -448,7 +448,7 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
                 setPermanent(true);
               }
             }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-[family-name:var(--font-pixel-stack)] border transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-[family-name:var(--font-pixel-stack)] border transition-all whitespace-nowrap ${
               permanent && emailVerified
                 ? "border-pixel-green text-pixel-green bg-pixel-green/10"
                 : "border-pixel-gray/30 text-pixel-gray/50 hover:text-pixel-gray"
@@ -462,9 +462,9 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
           </button>
         </div>
         {userEmail ? (
-          <div className="flex items-center gap-2">
-            <span className="text-pixel-cyan text-sm flex items-center gap-1">
-              <User size={10} /> {userEmail}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-pixel-cyan text-sm flex items-center gap-1 min-w-0">
+              <User size={10} className="shrink-0" /> <span className="truncate">{userEmail}</span>
             </span>
             <button
               onClick={() => logout()}
