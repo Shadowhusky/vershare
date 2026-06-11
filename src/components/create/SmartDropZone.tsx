@@ -1,9 +1,10 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Upload, X, ImageIcon, FileIcon, Type } from "lucide-react";
-import { MAX_FILE_SIZE, MAX_IMAGE_SIZE, formatFileSize } from "@/lib/constants";
+import { MAX_FILE_SIZE, MAX_IMAGE_SIZE, MAX_UPLOAD_FILE_SIZE, formatFileSize } from "@/lib/constants";
 import { ShareType } from "@/lib/types";
 import { useT } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 
 interface SmartDropZoneProps {
   onDetect: (result: SmartDetectResult) => void;
@@ -94,6 +95,7 @@ function detectType(text: string): { type: ShareType; language?: string } {
 
 export default function SmartDropZone({ onDetect, injectText }: SmartDropZoneProps) {
   const t = useT();
+  const { email } = useAuth();
   const [mode, setMode] = useState<"idle" | "text" | "file">("idle");
   const [isDragging, setIsDragging] = useState(false);
   const [text, setText] = useState("");
@@ -150,15 +152,24 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
   const handleFile = useCallback(
     (f: File) => {
       setSizeError(null);
-      const maxSize = f.type.startsWith("image/") ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
+      const isImage = f.type.startsWith("image/");
+      // Signed-in users get the chunked path; anonymous caps at one request
+      const maxSize = isImage ? MAX_IMAGE_SIZE : email ? MAX_UPLOAD_FILE_SIZE : MAX_FILE_SIZE;
       if (f.size > maxSize) {
-        setSizeError(t("create.smart.fileTooLarge", { size: formatFileSize(f.size), max: formatFileSize(maxSize) }));
+        setSizeError(
+          !isImage && !email
+            ? t("create.smart.signInForLarge", {
+                max: formatFileSize(MAX_FILE_SIZE),
+                big: formatFileSize(MAX_UPLOAD_FILE_SIZE),
+              })
+            : t("create.smart.fileTooLarge", { size: formatFileSize(f.size), max: formatFileSize(maxSize) })
+        );
         return;
       }
       setFile(f);
       setMode("file");
     },
-    [t]
+    [t, email]
   );
 
   const handleDragEnter = (e: React.DragEvent) => {

@@ -43,7 +43,7 @@ export const en = {
   // common
   "common.dropzone.clickToBrowse": "or click to browse",
   "common.dropzone.dropFileHere": "DROP FILE HERE",
-  "common.dropzone.fileTooLarge": "File too large. Max: {max}MB",
+  "common.dropzone.fileTooLarge": "File too large. Max: {max}",
   "common.dropzone.release": "RELEASE TO DROP",
   "common.dropzone.typeNotAccepted": "File type not accepted",
   "common.shareLink.complete": "DROP COMPLETE!",
@@ -95,6 +95,7 @@ export const en = {
   "create.smart.hint": "files · images · anything",
   "create.smart.placeholder": "Type or paste content... (auto-detects text, markdown, or code)",
   "create.smart.release": "RELEASE TO DROP",
+  "create.smart.signInForLarge": "Files over {max} need an account — sign in to share up to {big}.",
   "create.smart.typeButton": "TYPE",
   "create.submit.dropIt": "DROP IT",
   "create.submit.dropping": "DROPPING...",
@@ -110,6 +111,8 @@ export const en = {
   "create.title.placeholder": "Name your drop...",
   "create.toast.linkCopied": "Link copied to clipboard!",
   "create.toast.shareCreated": "Share created!",
+  "create.upload.cancel": "CANCEL UPLOAD",
+  "create.upload.signInRequired": "Sign in to upload large files",
 
   // doc
   "doc.api.baseLabel": "Base:",

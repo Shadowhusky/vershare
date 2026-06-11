@@ -23,10 +23,13 @@ import ImageTab from "./ImageTab";
 import SmartDropZone, { SmartDetectResult } from "./SmartDropZone";
 import ShareLinkBox from "@/components/shared/ShareLinkBox";
 import P2PSharePanel from "./P2PSharePanel";
+import RetroProgress from "@/components/shared/RetroProgress";
 import { ShareType } from "@/lib/types";
 import { HistoryItem } from "@/hooks/use-upload-history";
 import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
+import { MAX_FILE_SIZE, formatFileSize } from "@/lib/constants";
+import { uploadFileMultipart, UploadCanceledError } from "@/lib/multipart-upload";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 const TABS: { type: ShareType; labelKey: TranslationKey; icon: React.ReactNode }[] = [
@@ -63,6 +66,17 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
   const [shareId, setShareId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{ loaded: number; total: number } | null>(null);
+  const uploadAbortRef = useRef<AbortController | null>(null);
+  const isUploading = uploadProgress !== null;
+
+  // Leaving mid-upload silently kills the transfer — warn first
+  useEffect(() => {
+    if (!isUploading) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [isUploading]);
 
   const [demoText, setDemoText] = useState<string | null>(null);
 
@@ -131,12 +145,57 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
   const submitData = getSubmitData();
   const canSubmit = submitData !== null;
 
+  const finishCreate = async (data: Record<string, any>) => {
+    setShareId(data.id);
+
+    // Auto-copy to clipboard (no native share popup)
+    const shareUrl = `${window.location.origin}/s/${data.id}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setToast(t("create.toast.linkCopied"));
+    } catch {
+      setToast(t("create.toast.shareCreated"));
+    }
+    setTimeout(() => setToast(null), 3000);
+
+    onCreated({
+      share_id: data.id,
+      share_type: data.type,
+      title: data.title || null,
+      file_name: data.fileName || null,
+      file_size: data.fileSize || null,
+      created_at: data.createdAt,
+      expires_at: data.expiresAt || null,
+    });
+  };
+
   const handleSubmit = async () => {
     if (!submitData || isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // Chunked path for files past the single-request ceiling
+      if (submitData.file && submitData.file.size > MAX_FILE_SIZE) {
+        if (!userEmail) {
+          openAuth();
+          throw new Error(t("create.upload.signInRequired"));
+        }
+        const controller = new AbortController();
+        uploadAbortRef.current = controller;
+        setUploadProgress({ loaded: 0, total: submitData.file.size });
+        const data = await uploadFileMultipart({
+          file: submitData.file,
+          type: submitData.type === "image" ? "image" : "file",
+          title: title.trim() || undefined,
+          permanent: permanent || undefined,
+          onProgress: (loaded, total) => setUploadProgress({ loaded, total }),
+          signal: controller.signal,
+        });
+        await finishCreate(data as unknown as Record<string, any>);
+        return;
+      }
+
       let res: Response;
 
       if (submitData.file) {
@@ -166,31 +225,15 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
       }
 
       const data = await res.json() as Record<string, any>;
-      setShareId(data.id);
-
-      // Auto-copy to clipboard (no native share popup)
-      const shareUrl = `${window.location.origin}/s/${data.id}`;
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        setToast(t("create.toast.linkCopied"));
-      } catch {
-        setToast(t("create.toast.shareCreated"));
-      }
-      setTimeout(() => setToast(null), 3000);
-
-      onCreated({
-        share_id: data.id,
-        share_type: data.type,
-        title: data.title || null,
-        file_name: data.fileName || null,
-        file_size: data.fileSize || null,
-        created_at: data.createdAt,
-        expires_at: data.expiresAt || null,
-      });
+      await finishCreate(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("create.error.generic"));
+      if (!(err instanceof UploadCanceledError)) {
+        setError(err instanceof Error ? err.message : t("create.error.generic"));
+      }
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
+      uploadAbortRef.current = null;
     }
   };
 
@@ -393,6 +436,23 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
         <p className="text-pixel-pink text-sm font-[family-name:var(--font-pixel-stack)]">
           {t("create.error.label", { message: error })}
         </p>
+      )}
+
+      {/* Chunked upload progress */}
+      {uploadProgress && (
+        <div className="pixel-border p-4 space-y-3 bg-pixel-dark/40">
+          <RetroProgress
+            percent={Math.floor((uploadProgress.loaded / uploadProgress.total) * 100)}
+            color="cyan"
+            label={`${formatFileSize(uploadProgress.loaded)} / ${formatFileSize(uploadProgress.total)}`}
+          />
+          <button
+            onClick={() => uploadAbortRef.current?.abort()}
+            className="px-3 py-1.5 text-xs font-[family-name:var(--font-pixel-stack)] border border-pixel-gray/30 text-pixel-gray hover:text-pixel-pink hover:border-pixel-pink/40 transition-colors"
+          >
+            {t("create.upload.cancel")}
+          </button>
+        </div>
       )}
 
       {/* Submit */}

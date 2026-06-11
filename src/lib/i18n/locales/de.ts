@@ -43,7 +43,7 @@ export const de: Record<TranslationKey, string> = {
   // common
   "common.dropzone.clickToBrowse": "oder klicken zum Auswählen",
   "common.dropzone.dropFileHere": "DATEI HIER ABLEGEN",
-  "common.dropzone.fileTooLarge": "Datei zu groß. Max: {max}MB",
+  "common.dropzone.fileTooLarge": "Datei zu groß. Max: {max}",
   "common.dropzone.release": "LOSLASSEN ZUM DROPPEN",
   "common.dropzone.typeNotAccepted": "Dateityp nicht erlaubt",
   "common.shareLink.complete": "DROP FERTIG!",
@@ -95,6 +95,7 @@ export const de: Record<TranslationKey, string> = {
   "create.smart.hint": "Dateien · Bilder · alles",
   "create.smart.placeholder": "Inhalt tippen oder einfügen... (erkennt Text, Markdown oder Code automatisch)",
   "create.smart.release": "LOSLASSEN ZUM DROPPEN",
+  "create.smart.signInForLarge": "Dateien über {max} brauchen ein Konto — melde dich an, um bis zu {big} zu teilen.",
   "create.smart.typeButton": "TIPPEN",
   "create.submit.dropIt": "DROP IT",
   "create.submit.dropping": "DROPPE...",
@@ -110,6 +111,8 @@ export const de: Record<TranslationKey, string> = {
   "create.title.placeholder": "Gib deinem Drop einen Namen...",
   "create.toast.linkCopied": "Link in die Zwischenablage kopiert!",
   "create.toast.shareCreated": "Share erstellt!",
+  "create.upload.cancel": "UPLOAD ABBRECHEN",
+  "create.upload.signInRequired": "Melde dich an, um große Dateien hochzuladen",
 
   // doc
   "doc.api.baseLabel": "Basis:",

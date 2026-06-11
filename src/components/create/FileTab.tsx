@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import DropZone from "@/components/shared/DropZone";
-import { MAX_FILE_SIZE, formatFileSize } from "@/lib/constants";
+import { MAX_FILE_SIZE, MAX_UPLOAD_FILE_SIZE, formatFileSize } from "@/lib/constants";
 import { FileIcon, X } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 
 interface FileTabProps {
   file: File | null;
@@ -12,6 +13,7 @@ interface FileTabProps {
 
 export default function FileTab({ file, onFile }: FileTabProps) {
   const t = useT();
+  const { email } = useAuth();
   const [preview, setPreview] = useState<string | null>(null);
   const isImage = file?.type.startsWith("image/") ?? false;
 
@@ -64,7 +66,7 @@ export default function FileTab({ file, onFile }: FileTabProps) {
       ) : (
         <DropZone
           onFile={onFile}
-          maxSize={MAX_FILE_SIZE}
+          maxSize={email ? MAX_UPLOAD_FILE_SIZE : MAX_FILE_SIZE}
           label={t("create.fileTab.dropHere")}
         />
       )}

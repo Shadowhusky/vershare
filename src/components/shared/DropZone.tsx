@@ -2,6 +2,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Upload } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import { formatFileSize } from "@/lib/constants";
 
 interface DropZoneProps {
   onFile: (file: File) => void;
@@ -28,7 +29,7 @@ export default function DropZone({
     (file: File) => {
       setError(null);
       if (maxSize && file.size > maxSize) {
-        setError(t("common.dropzone.fileTooLarge", { max: (maxSize / (1024 * 1024)).toFixed(0) }));
+        setError(t("common.dropzone.fileTooLarge", { max: formatFileSize(maxSize) }));
         return;
       }
       if (accept) {

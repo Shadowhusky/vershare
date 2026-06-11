@@ -43,7 +43,7 @@ export const ja: Record<TranslationKey, string> = {
   // common
   "common.dropzone.clickToBrowse": "またはクリックして選択",
   "common.dropzone.dropFileHere": "ここにファイルをドロップ",
-  "common.dropzone.fileTooLarge": "ファイルが大きすぎます。上限: {max}MB",
+  "common.dropzone.fileTooLarge": "ファイルが大きすぎます。上限: {max}",
   "common.dropzone.release": "離してドロップ！",
   "common.dropzone.typeNotAccepted": "このファイル形式は使用できません",
   "common.shareLink.complete": "ドロップ完了！",
@@ -95,6 +95,7 @@ export const ja: Record<TranslationKey, string> = {
   "create.smart.hint": "ファイル · 画像 · なんでも",
   "create.smart.placeholder": "入力または貼り付け...（テキスト・マークダウン・コードを自動検出）",
   "create.smart.release": "離してドロップ！",
+  "create.smart.signInForLarge": "{max} を超えるファイルにはアカウントが必要です。ログインすると最大 {big} まで共有できます。",
   "create.smart.typeButton": "入力",
   "create.submit.dropIt": "ドロップ！",
   "create.submit.dropping": "ドロップ中...",
@@ -110,6 +111,8 @@ export const ja: Record<TranslationKey, string> = {
   "create.title.placeholder": "ドロップに名前を付ける...",
   "create.toast.linkCopied": "リンクをコピーしました！",
   "create.toast.shareCreated": "共有を作成しました！",
+  "create.upload.cancel": "アップロードをキャンセル",
+  "create.upload.signInRequired": "大きなファイルはログイン後にアップロードできます",
 
   // doc
   "doc.api.baseLabel": "ベースURL:",

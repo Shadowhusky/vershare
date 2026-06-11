@@ -58,3 +58,4 @@ next-env.d.ts
 /.shots/
 serve.log
 nohup.out
+.test-files/

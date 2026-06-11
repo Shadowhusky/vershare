@@ -43,7 +43,7 @@ export const zh: Record<TranslationKey, string> = {
   // common
   "common.dropzone.clickToBrowse": "或点击选择文件",
   "common.dropzone.dropFileHere": "把文件拖到这里",
-  "common.dropzone.fileTooLarge": "文件太大了。上限：{max}MB",
+  "common.dropzone.fileTooLarge": "文件太大了。上限：{max}",
   "common.dropzone.release": "松手即投放",
   "common.dropzone.typeNotAccepted": "不支持该文件类型",
   "common.shareLink.complete": "投放完成！",
@@ -95,6 +95,7 @@ export const zh: Record<TranslationKey, string> = {
   "create.smart.hint": "文件 · 图片 · 来者不拒",
   "create.smart.placeholder": "输入或粘贴内容...（自动识别文本、markdown 或代码）",
   "create.smart.release": "松手即投放",
+  "create.smart.signInForLarge": "超过 {max} 的文件需要账号——登录后最大可分享 {big}。",
   "create.smart.typeButton": "输入",
   "create.submit.dropIt": "投放！",
   "create.submit.dropping": "投放中...",
@@ -110,6 +111,8 @@ export const zh: Record<TranslationKey, string> = {
   "create.title.placeholder": "给这次投放起个名字...",
   "create.toast.linkCopied": "链接已复制到剪贴板！",
   "create.toast.shareCreated": "分享已创建！",
+  "create.upload.cancel": "取消上传",
+  "create.upload.signInRequired": "登录后即可上传大文件",
 
   // doc
   "doc.api.baseLabel": "基址：",
