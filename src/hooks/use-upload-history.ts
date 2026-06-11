@@ -103,5 +103,18 @@ export function useUploadHistory(userEmail: string | null) {
     [userEmail]
   );
 
-  return { history, loading, addItem, updateItem };
+  const removeItem = useCallback(
+    (shareId: string) => {
+      setHistory((prev) => {
+        const next = prev.filter((h) => h.share_id !== shareId);
+        if (!userEmail) {
+          setLocalHistory(next);
+        }
+        return next;
+      });
+    },
+    [userEmail]
+  );
+
+  return { history, loading, addItem, updateItem, removeItem };
 }

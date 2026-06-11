@@ -10,11 +10,11 @@ import { useT } from "@/lib/i18n";
 
 export default function HomeWorkspace() {
   const t = useT();
-  const { email } = useAuth();
-  const { history, loading, addItem, updateItem } = useUploadHistory(email);
+  const { email, loading: authLoading } = useAuth();
+  const { history, loading, addItem, updateItem, removeItem } = useUploadHistory(email);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const changeExpiry = async (shareId: string, expiry: "extend" | "permanent") => {
+  const changeExpiry = async (shareId: string, expiry: "extend" | "permanent" | "temporary") => {
     const res = await fetch(`/api/shares/${shareId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -26,7 +26,15 @@ export default function HomeWorkspace() {
     return true;
   };
 
-  const sidebarHiddenOnMobile = !loading && history.length === 0;
+  const deleteShare = async (shareId: string) => {
+    const res = await fetch(`/api/shares/${shareId}`, { method: "DELETE" });
+    if (!res.ok) return false;
+    removeItem(shareId);
+    window.dispatchEvent(new CustomEvent("vershare:close-share", { detail: { id: shareId } }));
+    return true;
+  };
+
+  const sidebarHiddenOnMobile = !loading && !authLoading && history.length === 0;
 
   return (
     <div className="lg:grid lg:h-full lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
@@ -52,10 +60,11 @@ export default function HomeWorkspace() {
       >
         <RecentDrops
           history={history}
-          loading={loading}
+          loading={loading || authLoading}
           activeId={activeId}
           canEdit={!!email}
           onChangeExpiry={changeExpiry}
+          onDelete={deleteShare}
         />
       </aside>
     </div>

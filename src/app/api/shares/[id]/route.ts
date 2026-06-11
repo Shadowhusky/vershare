@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getShareChecked, getShare } from "@/lib/shares";
 import { getBaseUrl } from "@/lib/url";
 import { getDb } from "@/lib/db";
+import { deleteShareData } from "@/lib/storage";
 import { getUserFromRequest, isUserVerified } from "@/lib/user-auth";
 import { DEFAULT_EXPIRY_MS, EXPIRED_RETENTION_MS } from "@/lib/constants";
 
@@ -78,9 +79,15 @@ export async function PATCH(
     }
     expiresAt = null;
   } else if (body.expiry === "extend") {
+    // Add 7 days to the remaining time; expired shares restart from now
+    const base = share.expiresAt
+      ? Math.max(Date.now(), new Date(share.expiresAt).getTime())
+      : Date.now();
+    expiresAt = new Date(base + DEFAULT_EXPIRY_MS).toISOString();
+  } else if (body.expiry === "temporary") {
     expiresAt = new Date(Date.now() + DEFAULT_EXPIRY_MS).toISOString();
   } else {
-    return NextResponse.json({ error: "expiry must be \"extend\" or \"permanent\"" }, { status: 400 });
+    return NextResponse.json({ error: "expiry must be \"extend\", \"permanent\" or \"temporary\"" }, { status: 400 });
   }
 
   const db = await getDb();
@@ -94,4 +101,26 @@ export async function PATCH(
     .run();
 
   return NextResponse.json({ id: share.id, expiresAt });
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const userEmail = getUserFromRequest(request);
+  if (!userEmail) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
+  const share = await getShare(id);
+  if (!share) {
+    return NextResponse.json({ error: "Share not found" }, { status: 404 });
+  }
+  if (share.createdBy !== userEmail) {
+    return NextResponse.json({ error: "Only the owner can delete this drop" }, { status: 403 });
+  }
+
+  await deleteShareData(share.id);
+  return NextResponse.json({ deleted: true });
 }

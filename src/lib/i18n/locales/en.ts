@@ -324,6 +324,16 @@ export const en = {
   "recents.showAll": "SHOW ALL ({count})",
   "recents.now": "now",
   "recents.expired": "EXPIRED",
+  "confirm.cancel": "CANCEL",
+  "confirm.confirm": "CONFIRM",
+  "delete.action": "Delete drop",
+  "delete.title": "DELETE DROP?",
+  "delete.message": "\"{name}\" will be permanently deleted. This cannot be undone.",
+  "delete.confirm": "DELETE",
+  "delete.failed": "Could not delete",
+  "view.expiry.makeTemporary": "MAKE TEMPORARY",
+  "view.agentTip.title": "SHARE WITH AI",
+  "view.agentTip.body": "Click here to copy an agent-friendly raw link to paste into your AI.",
 } as const;
 
 export type TranslationKey = keyof typeof en;

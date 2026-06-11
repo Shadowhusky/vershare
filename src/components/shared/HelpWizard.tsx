@@ -204,26 +204,33 @@ export default function HelpWizard({ open, onClose, onRequestContent }: HelpWiza
   const isFirst = step === 0;
   const isLast = step === STEPS.length - 1;
 
-  // Build clip-path to cut out the spotlight rectangle
-  const clipPath = targetRect
-    ? `polygon(
-        0% 0%, 0% 100%, 100% 100%, 100% 0%, 0% 0%,
-        ${targetRect.left}px ${targetRect.top}px,
-        ${targetRect.left}px ${targetRect.top + targetRect.height}px,
-        ${targetRect.left + targetRect.width}px ${targetRect.top + targetRect.height}px,
-        ${targetRect.left + targetRect.width}px ${targetRect.top}px,
-        ${targetRect.left}px ${targetRect.top}px
-      )`
-    : undefined;
+  // Four mask panels around the spotlight rect — guarantees the bounded
+  // section is never covered (clip-path holes mis-fill under nonzero winding).
+  const panels: React.CSSProperties[] = targetRect
+    ? [
+        { top: 0, left: 0, width: "100%", height: targetRect.top },
+        { top: targetRect.top + targetRect.height, left: 0, width: "100%", bottom: 0 },
+        { top: targetRect.top, left: 0, width: targetRect.left, height: targetRect.height },
+        {
+          top: targetRect.top,
+          left: targetRect.left + targetRect.width,
+          right: 0,
+          height: targetRect.height,
+        },
+      ]
+    : [{ inset: 0 }];
 
   return (
     <div ref={overlayRef} className="fixed inset-0 z-[200]">
-      {/* Mask with cutout */}
-      <div
-        className="absolute inset-0 bg-black/75 transition-all duration-300"
-        style={{ clipPath }}
-        onClick={onClose}
-      />
+      {/* Mask panels — the spotlight cutout stays fully clear */}
+      {panels.map((p, i) => (
+        <div
+          key={i}
+          className="absolute bg-black/70 transition-all duration-300"
+          style={p}
+          onClick={onClose}
+        />
+      ))}
 
       {/* Spotlight border glow */}
       {targetRect && (

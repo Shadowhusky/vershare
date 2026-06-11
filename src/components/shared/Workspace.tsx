@@ -98,8 +98,13 @@ export default function Workspace({ children, className, onActiveChange }: Works
     onActiveChange?.(active === "new" ? null : active);
   }, [active, onActiveChange]);
 
+  const closeTab = (id: string) => {
+    setTabs((prev) => prev.filter((tab) => tab.id !== id));
+    setActive((curr) => (curr === id ? "new" : curr));
+  };
+
   useEffect(() => {
-    const handler = (e: Event) => {
+    const onOpen = (e: Event) => {
       const { id, title } = (e as CustomEvent<OpenShareDetail>).detail;
       setTabs((prev) =>
         prev.some((tab) => tab.id === id)
@@ -108,14 +113,18 @@ export default function Workspace({ children, className, onActiveChange }: Works
       );
       setActive(id);
     };
-    window.addEventListener("vershare:open-share", handler);
-    return () => window.removeEventListener("vershare:open-share", handler);
+    const onClose = (e: Event) => {
+      const { id } = (e as CustomEvent<{ id: string }>).detail;
+      setTabs((prev) => prev.filter((tab) => tab.id !== id));
+      setActive((curr) => (curr === id ? "new" : curr));
+    };
+    window.addEventListener("vershare:open-share", onOpen);
+    window.addEventListener("vershare:close-share", onClose);
+    return () => {
+      window.removeEventListener("vershare:open-share", onOpen);
+      window.removeEventListener("vershare:close-share", onClose);
+    };
   }, []);
-
-  const closeTab = (id: string) => {
-    setTabs((prev) => prev.filter((tab) => tab.id !== id));
-    if (active === id) setActive("new");
-  };
 
   const cycle = (dir: 1 | -1) => {
     const order = ["new", ...tabs.map((tab) => tab.id)];

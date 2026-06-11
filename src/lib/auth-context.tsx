@@ -12,6 +12,7 @@ import AuthModal from "@/components/auth/AuthModal";
 interface AuthContextValue {
   email: string | null;
   verified: boolean;
+  loading: boolean;
   openAuth: () => void;
   logout: () => Promise<void>;
 }
@@ -19,6 +20,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({
   email: null,
   verified: false,
+  loading: true,
   openAuth: () => {},
   logout: async () => {},
 });
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextValue>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -37,7 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setVerified(data.emailVerified === true);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const openAuth = useCallback(() => setModalOpen(true), []);
@@ -49,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ email, verified, openAuth, logout }}>
+    <AuthContext.Provider value={{ email, verified, loading, openAuth, logout }}>
       {children}
       <AuthModal
         open={modalOpen}
