@@ -99,7 +99,8 @@ export default async function RootLayout({
   const locale = isLocale(cookieLocale)
     ? cookieLocale
     : parseAcceptLanguage((await headers()).get("accept-language"));
-  const theme = cookieStore.get("vershare_theme")?.value === "light" ? "light" : undefined;
+  // Light is the default — only an explicit "dark" cookie opts out
+  const theme = cookieStore.get("vershare_theme")?.value === "dark" ? undefined : "light";
   const initialAuth = await getSessionSnapshot();
   // The CJK font is lazy via unicode-range; preloading it for CJK locales
   // starts the download at HTML parse instead of after first layout.
@@ -115,7 +116,7 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "try{if(localStorage.getItem('vershare_theme')==='light'&&!document.cookie.includes('vershare_theme=')){document.documentElement.dataset.theme='light';document.cookie='vershare_theme=light; path=/; max-age=31536000; samesite=lax'}}catch(e){}",
+              "try{var m=localStorage.getItem('vershare_theme');if(m&&!document.cookie.includes('vershare_theme=')){if(m==='dark'){delete document.documentElement.dataset.theme}else{document.documentElement.dataset.theme='light'}document.cookie='vershare_theme='+m+'; path=/; max-age=31536000; samesite=lax'}}catch(e){}",
           }}
         />
         <script
@@ -145,7 +146,7 @@ export default async function RootLayout({
         <I18nProvider initialLocale={locale}>
           <AuthProvider initialAuth={initialAuth}>
           <div className="relative z-10 h-dvh flex flex-col overflow-hidden">
-            <Header />
+            <Header initialTheme={theme === "light" ? "light" : "dark"} />
 
             <main className="flex-1 min-h-0 overflow-y-auto px-3 py-4 sm:px-8 sm:py-6">
               <div className="mx-auto h-full max-w-6xl">{children}</div>

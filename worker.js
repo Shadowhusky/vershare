@@ -50,6 +50,17 @@ async function abortStaleUploads(env) {
   if (results.length) console.log(`purge: aborted ${results.length} stale uploads`);
 }
 
+// History/seen rows whose share no longer exists would resurrect deleted
+// drops in the sidebar lists.
+async function sweepOrphanRows(env) {
+  await env.DB.prepare(
+    "DELETE FROM upload_history WHERE share_id NOT IN (SELECT id FROM shares)"
+  ).run();
+  await env.DB.prepare(
+    "DELETE FROM seen_shares WHERE share_id NOT IN (SELECT id FROM shares)"
+  ).run();
+}
+
 // Serve file/image downloads natively — the OpenNext bridge truncates large
 // streamed bodies, and a direct R2 stream is faster anyway. Returns null for
 // anything that isn't a healthy file share so Next keeps its 404/410 JSON.
@@ -129,6 +140,8 @@ export default {
     return openNextWorker.fetch(request, env, ctx);
   },
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(Promise.all([purgeExpiredShares(env), abortStaleUploads(env)]));
+    ctx.waitUntil(
+      Promise.all([purgeExpiredShares(env), abortStaleUploads(env), sweepOrphanRows(env)])
+    );
   },
 };

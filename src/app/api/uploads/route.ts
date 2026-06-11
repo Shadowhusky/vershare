@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/user-auth";
 import { getUserStorageUsage } from "@/lib/storage";
 import { initMultipartUpload } from "@/lib/multipart";
+import { inferMimeType } from "@/lib/mime";
 import {
   MAX_IMAGE_SIZE,
   MAX_UPLOAD_FILE_SIZE,
@@ -57,7 +58,7 @@ export async function POST(request: NextRequest) {
       type,
       fileName,
       fileSize: fileSize!,
-      mimeType: mimeType || "application/octet-stream",
+      mimeType: inferMimeType(fileName, mimeType),
     });
 
     return NextResponse.json({ id, partSize: UPLOAD_PART_SIZE });

@@ -11,7 +11,7 @@ import ProfileMenu from "./ProfileMenu";
 
 const LS_KEY = "vershare_wizard_seen";
 
-export default function Header() {
+export default function Header({ initialTheme }: { initialTheme: "dark" | "light" }) {
   const t = useT();
   const pathname = usePathname();
   const { wizardSeen } = useAuth();
@@ -84,7 +84,7 @@ export default function Header() {
             </h1>
           </a>
           <div className="flex items-center gap-2 sm:gap-3">
-            <ThemeToggle />
+            <ThemeToggle initialTheme={initialTheme} />
             <LanguageSwitcher />
             <ProfileMenu />
             {helpAvailable && (

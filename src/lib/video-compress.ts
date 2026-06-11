@@ -1,5 +1,9 @@
 // Client-side video compression via WebCodecs (hardware-accelerated where the
 // platform allows). mediabunny is imported lazily so the home bundle stays slim.
+//
+// Output streams to an OPFS temp file (disk-backed) as fragmented MP4 — keeping
+// the whole compressed file in memory crashed tabs on multi-GB videos.
+import type { StreamTargetChunk } from "mediabunny";
 
 export function canCompressVideo(): boolean {
   return typeof window !== "undefined" && "VideoEncoder" in window;
@@ -13,6 +17,29 @@ export class CompressionCanceled extends Error {
 }
 
 const MAX_WIDTH = 1280;
+// Without OPFS the output must fit in one ArrayBuffer — only safe for inputs
+// that can't produce a huge result.
+const MAX_INPUT_WITHOUT_OPFS = 1024 * 1024 * 1024; // 1GB
+
+const TMP_DIR = "vershare-compress";
+
+async function getTmpDir(): Promise<FileSystemDirectoryHandle | null> {
+  try {
+    const root = await navigator.storage.getDirectory();
+    return await root.getDirectoryHandle(TMP_DIR, { create: true });
+  } catch {
+    return null;
+  }
+}
+
+export async function cleanupCompressTmp(): Promise<void> {
+  try {
+    const root = await navigator.storage.getDirectory();
+    await root.removeEntry(TMP_DIR, { recursive: true });
+  } catch {
+    // nothing to clean
+  }
+}
 
 export async function compressVideo(
   file: File,
@@ -26,6 +53,7 @@ export async function compressVideo(
     ALL_FORMATS,
     BlobSource,
     BufferTarget,
+    StreamTarget,
     Mp4OutputFormat,
     QUALITY_MEDIUM,
     ConversionCanceledError,
@@ -36,9 +64,39 @@ export async function compressVideo(
   if (!videoTrack) throw new Error("No video track found");
   const targetWidth = Math.min(MAX_WIDTH, videoTrack.displayWidth || MAX_WIDTH);
 
+  // Prefer a disk-backed OPFS target; memory stays flat regardless of size
+  const tmpDir = await getTmpDir();
+  let opfsHandle: FileSystemFileHandle | null = null;
+  let opfsWritable: FileSystemWritableFileStream | null = null;
+  if (tmpDir) {
+    try {
+      opfsHandle = await tmpDir.getFileHandle(`out-${Date.now()}.mp4`, { create: true });
+      opfsWritable = await opfsHandle.createWritable();
+    } catch {
+      opfsHandle = null;
+      opfsWritable = null;
+    }
+  }
+
+  if (!opfsWritable && file.size > MAX_INPUT_WITHOUT_OPFS) {
+    throw new Error("Video too large to compress in this browser");
+  }
+
+  const target = opfsWritable
+    ? new StreamTarget(
+        new WritableStream<StreamTargetChunk>({
+          write: (chunk) =>
+            opfsWritable!.write({ type: "write", position: chunk.position, data: chunk.data }),
+        }),
+        { chunked: true }
+      )
+    : new BufferTarget();
+
   const output = new Output({
-    format: new Mp4OutputFormat({ fastStart: "in-memory" }),
-    target: new BufferTarget(),
+    // fragmented MP4 writes strictly forward — no whole-file buffering in the
+    // muxer — and plays natively in all modern browsers
+    format: new Mp4OutputFormat({ fastStart: "fragmented" }),
+    target,
   });
 
   const conversion = await Conversion.init({
@@ -51,6 +109,7 @@ export async function compressVideo(
   // A discarded track means the source codec can't be decoded/re-encoded here —
   // bail so the caller falls back to sharing the original.
   if (conversion.discardedTracks.length > 0) {
+    await opfsWritable?.abort().catch(() => {});
     throw new Error("Source codec not supported for compression");
   }
 
@@ -62,14 +121,23 @@ export async function compressVideo(
   try {
     await conversion.execute();
   } catch (err) {
+    await opfsWritable?.abort().catch(() => {});
     if (err instanceof ConversionCanceledError) throw new CompressionCanceled();
     throw err;
   }
 
-  const buffer = output.target.buffer;
-  if (!buffer) throw new Error("Compression produced no output");
+  const base = file.name.replace(/\.[^.]+$/, "");
+  const outName = `${base}-compressed.mp4`;
   onProgress(100);
 
-  const base = file.name.replace(/\.[^.]+$/, "");
-  return new File([buffer], `${base}-compressed.mp4`, { type: "video/mp4" });
+  if (opfsWritable && opfsHandle) {
+    await opfsWritable.close();
+    // The returned File is disk-backed — uploading slices it straight off OPFS
+    const result = await opfsHandle.getFile();
+    return new File([result], outName, { type: "video/mp4" });
+  }
+
+  const buffer = (target as InstanceType<typeof BufferTarget>).buffer;
+  if (!buffer) throw new Error("Compression produced no output");
+  return new File([buffer], outName, { type: "video/mp4" });
 }

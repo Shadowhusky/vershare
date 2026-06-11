@@ -1,17 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import { useT } from "@/lib/i18n";
 
 const THEME_KEY = "vershare_theme";
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ initialTheme }: { initialTheme: "dark" | "light" }) {
   const t = useT();
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    if (document.documentElement.dataset.theme === "light") setTheme("light");
-  }, []);
+  // SSR already resolved the theme from the cookie — no mount-time flip
+  const [theme, setTheme] = useState<"dark" | "light">(initialTheme);
 
   const toggle = () => {
     const next = theme === "dark" ? "light" : "dark";

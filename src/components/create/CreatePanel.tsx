@@ -31,7 +31,7 @@ import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { MAX_FILE_SIZE, formatFileSize } from "@/lib/constants";
 import { uploadFileMultipart, UploadCanceledError } from "@/lib/multipart-upload";
-import { canCompressVideo, compressVideo, CompressionCanceled } from "@/lib/video-compress";
+import { canCompressVideo, compressVideo, cleanupCompressTmp, CompressionCanceled } from "@/lib/video-compress";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface SubmitPayload {
@@ -100,6 +100,11 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
   }, [lastShared]);
   useEffect(() => () => {
     if (lastObjectUrlRef.current) URL.revokeObjectURL(lastObjectUrlRef.current);
+  }, []);
+
+  // Sweep compression temp files left by previous sessions
+  useEffect(() => {
+    cleanupCompressTmp();
   }, []);
 
   const [demoText, setDemoText] = useState<string | null>(null);

@@ -5,6 +5,7 @@ import { ShareType } from "@/lib/types";
 import { SHARE_TYPES, STORAGE_QUOTA_BYTES } from "@/lib/constants";
 import { getBaseUrl } from "@/lib/url";
 import { getUserFromRequest, isUserVerified, addUploadHistory } from "@/lib/user-auth";
+import { inferMimeType } from "@/lib/mime";
 
 
 export async function GET(request: NextRequest) {
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
         title: title || undefined,
         fileName: file.name,
         fileSize: file.size,
-        mimeType: file.type,
+        mimeType: inferMimeType(file.name, file.type),
         buffer,
         permanent: wantsPermanent,
         createdBy: userEmail || undefined,

@@ -126,6 +126,9 @@ export async function deleteShareData(id: string): Promise<boolean> {
       await bucket.delete(uploads.objects.map((o) => o.key));
     }
     await db.prepare("DELETE FROM shares WHERE id = ?").bind(safeId).run();
+    // Leftover rows here resurrect the drop in MY DROPS / SHARED W/ ME lists
+    await db.prepare("DELETE FROM upload_history WHERE share_id = ?").bind(safeId).run();
+    await db.prepare("DELETE FROM seen_shares WHERE share_id = ?").bind(safeId).run();
     return true;
   } catch {
     return false;

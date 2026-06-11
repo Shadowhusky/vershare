@@ -46,12 +46,16 @@ export default function SharedPreview({ shared }: { shared: LastShared }) {
 
   if (!body) return null;
 
+  // Cap the preview so the success view (link box + preview + NEW DROP)
+  // fits in one viewport; long text scrolls inside instead of the page.
   return (
     <div className="space-y-2">
       <p className="font-[family-name:var(--font-pixel-stack)] text-pixel-gray text-xs">
         ▸ {t("create.preview.label")}
       </p>
-      {body}
+      <div className="[&_.content-view]:max-h-[40vh] [&_.content-view]:overflow-y-auto [&_video]:max-h-[36vh] [&_iframe]:h-[36vh]! [&_img]:max-h-[34vh] [&_img]:w-auto [&_img]:mx-auto">
+        {body}
+      </div>
     </div>
   );
 }

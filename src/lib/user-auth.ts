@@ -270,9 +270,14 @@ export async function addUploadHistory(
 
 export async function getUserUploadHistory(userEmail: string, limit = 50) {
   const db = await getDb();
+  // Join shares so deleted drops never resurface, and expiry is authoritative
   const { results } = await db
     .prepare(
-      "SELECT share_id, share_type, title, file_name, file_size, created_at, expires_at FROM upload_history WHERE user_email = ? ORDER BY created_at DESC LIMIT ?"
+      `SELECT h.share_id, h.share_type, h.title, h.file_name, h.file_size, h.created_at, s.expires_at
+       FROM upload_history h
+       JOIN shares s ON s.id = h.share_id
+       WHERE h.user_email = ?
+       ORDER BY h.created_at DESC LIMIT ?`
     )
     .bind(userEmail, limit)
     .all();
