@@ -88,7 +88,7 @@ export default function MediaPreview({ url, mimeType, fileName }: MediaPreviewPr
           playsInline
           preload="metadata"
           controlsList="nodownload"
-          className="w-full max-h-[80vh] bg-black object-contain"
+          className="w-full max-h-[max(240px,calc(100dvh-320px))] bg-black object-contain"
           src={url}
           onError={() => setFailed(true)}
           onLoadedMetadata={(e) => {

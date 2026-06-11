@@ -230,7 +230,8 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
         cancelCompressRef.current = cancel;
       });
       return { ...payload, file: remuxed };
-    } catch {
+    } catch (err) {
+      console.warn("stream remux skipped:", err);
       return payload; // canceled or codec can't be copied — share untouched
     } finally {
       setStreamFixPct(null);
