@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createShare } from "@/lib/shares";
-import { listShares } from "@/lib/storage";
+import { listShares, getUserStorageUsage } from "@/lib/storage";
 import { ShareType } from "@/lib/types";
-import { SHARE_TYPES } from "@/lib/constants";
+import { SHARE_TYPES, STORAGE_QUOTA_BYTES } from "@/lib/constants";
 import { getBaseUrl } from "@/lib/url";
 import { getUserFromRequest, isUserVerified, addUploadHistory } from "@/lib/user-auth";
 
@@ -63,6 +63,16 @@ export async function POST(request: NextRequest) {
       }
       if (wantsPermanent && userEmail && !(await isUserVerified(userEmail))) {
         return NextResponse.json({ error: "Email verification required for permanent shares" }, { status: 403 });
+      }
+
+      if (userEmail) {
+        const used = await getUserStorageUsage(userEmail);
+        if (used + file.size > STORAGE_QUOTA_BYTES) {
+          return NextResponse.json(
+            { error: "Storage quota exceeded", code: "quota_exceeded", used, limit: STORAGE_QUOTA_BYTES },
+            { status: 413 }
+          );
+        }
       }
 
       const buffer = Buffer.from(await file.arrayBuffer());

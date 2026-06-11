@@ -1,18 +1,61 @@
 "use client";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Workspace from "@/components/shared/Workspace";
 import HomeHero from "@/components/shared/HomeHero";
 import CreatePanel from "@/components/create/CreatePanel";
 import RecentDrops from "@/components/create/RecentDrops";
-import { useUploadHistory } from "@/hooks/use-upload-history";
+import { useUploadHistory, HistoryItem } from "@/hooks/use-upload-history";
 import { useAuth } from "@/lib/auth-context";
 import { useT } from "@/lib/i18n";
+
+interface Usage {
+  used: number;
+  limit: number;
+}
 
 export default function HomeWorkspace() {
   const t = useT();
   const { email, loading: authLoading } = useAuth();
   const { history, loading, addItem, updateItem, removeItem } = useUploadHistory(email);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [usage, setUsage] = useState<Usage | null>(null);
+  const [seen, setSeen] = useState<HistoryItem[]>([]);
+  const [seenLoading, setSeenLoading] = useState(true);
+
+  const refreshUsage = useCallback(() => {
+    if (!email) {
+      setUsage(null);
+      return;
+    }
+    fetch("/api/auth/usage")
+      .then((r) => (r.ok ? (r.json() as Promise<Usage>) : null))
+      .then((d) => d && setUsage(d))
+      .catch(() => {});
+  }, [email]);
+
+  const refreshSeen = useCallback(() => {
+    if (!email) {
+      setSeen([]);
+      setSeenLoading(false);
+      return;
+    }
+    setSeenLoading(true);
+    fetch("/api/auth/seen")
+      .then((r) => (r.ok ? (r.json() as Promise<{ history: HistoryItem[] }>) : { history: [] }))
+      .then((d) => setSeen(d.history || []))
+      .catch(() => setSeen([]))
+      .finally(() => setSeenLoading(false));
+  }, [email]);
+
+  useEffect(() => {
+    refreshUsage();
+    refreshSeen();
+  }, [refreshUsage, refreshSeen]);
+
+  const onCreated = (item: HistoryItem) => {
+    addItem(item);
+    refreshUsage();
+  };
 
   const changeExpiry = async (shareId: string, expiry: "extend" | "permanent" | "temporary") => {
     const res = await fetch(`/api/shares/${shareId}`, {
@@ -31,13 +74,15 @@ export default function HomeWorkspace() {
     if (!res.ok) return false;
     removeItem(shareId);
     window.dispatchEvent(new CustomEvent("vershare:close-share", { detail: { id: shareId } }));
+    refreshUsage();
     return true;
   };
 
-  const sidebarHiddenOnMobile = !loading && !authLoading && history.length === 0;
+  const sidebarHiddenOnMobile =
+    !loading && !authLoading && history.length === 0 && seen.length === 0;
 
   return (
-    <div className="lg:grid lg:h-full lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
+    <div className="lg:grid lg:h-full lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-6">
       {/* Large work panel — DOM-first so mobile stacks the form on top */}
       <section className="lg:col-start-2 lg:row-start-1 lg:min-h-0">
         <Workspace
@@ -46,12 +91,12 @@ export default function HomeWorkspace() {
         >
           <div className="space-y-4 sm:space-y-6">
             <HomeHero />
-            <CreatePanel onCreated={addItem} />
+            <CreatePanel onCreated={onCreated} />
           </div>
         </Workspace>
       </section>
 
-      {/* Recents pane — small panel, pinned left on desktop, below on mobile */}
+      {/* Drops pane — small panel, pinned left on desktop, below on mobile */}
       <aside
         aria-label={t("create.recentDrops")}
         className={`mt-8 lg:mt-0 lg:col-start-1 lg:row-start-1 lg:min-h-0 flex-col pixel-border bg-pixel-dark/40 ${
@@ -60,9 +105,12 @@ export default function HomeWorkspace() {
       >
         <RecentDrops
           history={history}
+          seen={seen}
           loading={loading || authLoading}
+          seenLoading={seenLoading || authLoading}
           activeId={activeId}
           canEdit={!!email}
+          usage={usage}
           onChangeExpiry={changeExpiry}
           onDelete={deleteShare}
         />

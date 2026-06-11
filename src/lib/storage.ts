@@ -151,3 +151,14 @@ export async function readAllShares(): Promise<ShareMetadata[]> {
     .all<ShareRow>();
   return results.map(rowToShare);
 }
+
+export async function getUserStorageUsage(email: string): Promise<number> {
+  const db = await getDb();
+  const row = await db
+    .prepare(
+      "SELECT COALESCE(SUM(COALESCE(file_size, 0) + COALESCE(content_size, 0)), 0) AS used FROM shares WHERE created_by = ? AND (expires_at IS NULL OR expires_at > ?)"
+    )
+    .bind(email, new Date().toISOString())
+    .first<{ used: number }>();
+  return row?.used ?? 0;
+}

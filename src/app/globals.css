@@ -347,7 +347,19 @@ body::before {
   font-size: 0.9rem;
   line-height: 1.7;
   max-height: 80vh;
-  overflow: auto;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Long content scrolls inside its own block, never widening the container */
+.content-view pre {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.content-md {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .content-view pre,

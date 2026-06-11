@@ -54,7 +54,7 @@ export default function MediaPreview({ url, mimeType, fileName }: MediaPreviewPr
           src={url}
           sandbox="allow-same-origin"
           title={fileName || t("view.media.htmlPreview")}
-          className="w-full border-0 bg-white"
+          className="w-full border-0 bg-pixel-dark"
           style={{ height: "80vh" }}
         />
       </div>
@@ -68,7 +68,8 @@ export default function MediaPreview({ url, mimeType, fileName }: MediaPreviewPr
           controls
           playsInline
           preload="metadata"
-          className="w-full max-h-[80vh]"
+          controlsList="nodownload"
+          className="w-full max-h-[80vh] bg-black object-contain"
         >
           <source src={url} type={mimeType} />
           {t("view.media.videoUnsupported")}

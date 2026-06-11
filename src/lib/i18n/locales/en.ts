@@ -334,6 +334,17 @@ export const en = {
   "view.expiry.makeTemporary": "MAKE TEMPORARY",
   "view.agentTip.title": "SHARE WITH AI",
   "view.agentTip.body": "Click here to copy an agent-friendly raw link to paste into your AI.",
+  "panel.myDrops": "MY DROPS",
+  "panel.sharedWithMe": "SHARED W/ ME",
+  "panel.search": "Search drops...",
+  "panel.noResults": "NO MATCHES",
+  "usage.label": "STORAGE",
+  "seen.empty.title": "NOTHING YET",
+  "seen.empty.body": "Drops you open from others show up here.",
+  "menu.more": "More actions",
+  "menu.open": "Open",
+  "menu.copyLink": "Copy link",
+  "menu.copyAgentLink": "Copy agent link",
 } as const;
 
 export type TranslationKey = keyof typeof en;

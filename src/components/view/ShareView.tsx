@@ -25,7 +25,7 @@ const AGENT_TIP_KEY = "vershare_agent_tip_seen";
 
 export default function ShareView({ share }: { share: ShareMetadata }) {
   const t = useT();
-  const { verified } = useAuth();
+  const { email, verified } = useAuth();
   const { copied, copy } = useClipboard();
   const [toast, setToast] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null | undefined>(share.expiresAt);
@@ -45,6 +45,16 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
       /* storage unavailable */
     }
   });
+
+  // Record into "shared with me" when a logged-in non-owner opens this drop
+  useEffect(() => {
+    if (!email || share.isOwner) return;
+    fetch("/api/auth/seen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shareId: share.id }),
+    }).catch(() => {});
+  }, [email, share.isOwner, share.id]);
 
   // First-visit nudge toward the agent-link button, auto-dismissed after 7s
   useEffect(() => {

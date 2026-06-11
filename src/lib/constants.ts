@@ -7,9 +7,12 @@ export const DEFAULT_EXPIRY_MS = DEFAULT_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
 export const EXPIRED_RETENTION_DAYS = 30;
 export const EXPIRED_RETENTION_MS = EXPIRED_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
-export const MAX_TEXT_SIZE = 5 * 1024 * 1024; // 5MB
-export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-export const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
+export const MAX_TEXT_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB (Workers request-body ceiling)
+export const MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB
+
+// Per-account cap on active (non-expired) storage. Expired drops don't count.
+export const STORAGE_QUOTA_BYTES = 10 * 1024 * 1024 * 1024; // 10GB
 
 export const CODE_LANGUAGES = [
   "plaintext",
@@ -47,5 +50,6 @@ export const IMAGE_MIME_TYPES = [
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
