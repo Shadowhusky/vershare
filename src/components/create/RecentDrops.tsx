@@ -136,7 +136,7 @@ export default function RecentDrops({
           ))}
 
         {!isLoading && list.length === 0 && (
-          <div className="animate-fade-in m-2 py-10 px-4 border-2 border-dashed [border-color:var(--pixel-border)] text-center space-y-3">
+          <div className="animate-content-in m-2 py-10 px-4 border-2 border-dashed [border-color:var(--pixel-border)] text-center space-y-3">
             <p className="text-pixel-gray text-base">(=^･ω･^=)</p>
             <p className="font-[family-name:var(--font-pixel-stack)] text-xs text-pixel-gray pixel-cursor">
               {q
@@ -155,7 +155,7 @@ export default function RecentDrops({
 
         {!isLoading && list.length > 0 && (
           <>
-            <div className="animate-fade-in hidden lg:block space-y-1">
+            <div className="animate-content-in hidden lg:block space-y-1">
               {list.map((h) => (
                 <Row
                   key={h.share_id}
@@ -167,7 +167,7 @@ export default function RecentDrops({
                 />
               ))}
             </div>
-            <div className="animate-fade-in lg:hidden space-y-1">
+            <div className="animate-content-in lg:hidden space-y-1">
               {visible.map((h) => (
                 <Row
                   key={h.share_id}
@@ -220,7 +220,7 @@ function UsageBar({ usage }: { usage: { used: number; limit: number } | null }) 
       <div className="flex items-center justify-between text-[10px] font-[family-name:var(--font-pixel-stack)]">
         <span className="text-pixel-gray">{t("usage.label")}</span>
         {usage ? (
-          <span className={`animate-fade-in ${near ? "text-pixel-pink" : "text-pixel-gray"}`}>
+          <span className={`animate-content-in ${near ? "text-pixel-pink" : "text-pixel-gray"}`}>
             {formatFileSize(usage.used)} / {formatFileSize(usage.limit)}
           </span>
         ) : (

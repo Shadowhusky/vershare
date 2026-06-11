@@ -242,11 +242,14 @@ body::before {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-pulse-glow,
-  .animate-fade-in {
+  .animate-fade-in,
+  .animate-content-in {
     animation: none;
   }
 }
 
+/* Toast entrance — translate(-50%) doubles as the horizontal centering of
+   fixed left-1/2 toasts. Do NOT use on in-flow content; use content-in. */
 @keyframes fade-in {
   0% { opacity: 0; transform: translate(-50%, 10px); }
   100% { opacity: 1; transform: translate(-50%, 0); }
@@ -254,6 +257,16 @@ body::before {
 
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
+}
+
+/* Opacity-only entrance for content that loads in place */
+@keyframes content-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.animate-content-in {
+  animation: content-in 0.2s ease-out;
 }
 
 /* Custom scrollbar */
