@@ -41,8 +41,55 @@ export async function cleanupCompressTmp(): Promise<void> {
   }
 }
 
+// Walk top-level ISO-BMFF boxes (header reads only — instant on any size).
+// Returns false when the moov index sits after mdat: browsers must fetch the
+// file tail before playback can start, which feels like download-then-play.
+// true = already streamable (moov first, or fragmented); null = not MP4/MOV.
+export async function probeMp4Streamable(file: File): Promise<boolean | null> {
+  let offset = 0;
+  let sawMdat = false;
+  for (let i = 0; i < 64 && offset + 8 <= file.size; i++) {
+    const hdr = new DataView(await file.slice(offset, offset + 16).arrayBuffer());
+    if (hdr.byteLength < 8) return null;
+    let size: number = hdr.getUint32(0);
+    const type = String.fromCharCode(hdr.getUint8(4), hdr.getUint8(5), hdr.getUint8(6), hdr.getUint8(7));
+    if (i === 0 && type !== "ftyp") return null;
+    if (type === "moov") return !sawMdat;
+    if (type === "moof") return true;
+    if (type === "mdat") sawMdat = true;
+    if (size === 1) {
+      if (hdr.byteLength < 16) return null;
+      size = Number(hdr.getBigUint64(8));
+    } else if (size === 0) {
+      break;
+    }
+    if (size < 8) return null;
+    offset += size;
+  }
+  return sawMdat ? false : null;
+}
+
 export async function compressVideo(
   file: File,
+  onProgress: (pct: number) => void,
+  registerCancel: (cancel: () => void) => void
+): Promise<File> {
+  return convertVideo(file, "compress", onProgress, registerCancel);
+}
+
+// Stream copy into fragmented MP4 — same encoded samples, no quality loss,
+// runs at I/O speed. Makes moov-at-end files start playing instantly.
+export async function remuxVideo(
+  file: File,
+  onProgress: (pct: number) => void,
+  registerCancel: (cancel: () => void) => void
+): Promise<File> {
+  return convertVideo(file, "remux", onProgress, registerCancel);
+}
+
+async function convertVideo(
+  file: File,
+  mode: "compress" | "remux",
   onProgress: (pct: number) => void,
   registerCancel: (cancel: () => void) => void
 ): Promise<File> {
@@ -99,12 +146,18 @@ export async function compressVideo(
     target,
   });
 
-  const conversion = await Conversion.init({
-    input,
-    output,
-    video: { width: targetWidth, bitrate: QUALITY_MEDIUM },
-    audio: { bitrate: QUALITY_MEDIUM },
-  });
+  // Without video/audio overrides mediabunny copies the encoded samples
+  // verbatim (remux); with them it transcodes (compress).
+  const conversion = await Conversion.init(
+    mode === "compress"
+      ? {
+          input,
+          output,
+          video: { width: targetWidth, bitrate: QUALITY_MEDIUM },
+          audio: { bitrate: QUALITY_MEDIUM },
+        }
+      : { input, output }
+  );
 
   // A discarded track means the source codec can't be decoded/re-encoded here —
   // bail so the caller falls back to sharing the original.
@@ -127,7 +180,7 @@ export async function compressVideo(
   }
 
   const base = file.name.replace(/\.[^.]+$/, "");
-  const outName = `${base}-compressed.mp4`;
+  const outName = mode === "compress" ? `${base}-compressed.mp4` : `${base}.mp4`;
   onProgress(100);
 
   if (opfsWritable && opfsHandle) {

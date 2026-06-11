@@ -31,7 +31,14 @@ import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { MAX_FILE_SIZE, UPLOAD_PART_SIZE, formatFileSize } from "@/lib/constants";
 import { uploadFileMultipart, UploadCanceledError } from "@/lib/multipart-upload";
-import { canCompressVideo, compressVideo, cleanupCompressTmp, CompressionCanceled } from "@/lib/video-compress";
+import {
+  canCompressVideo,
+  compressVideo,
+  remuxVideo,
+  probeMp4Streamable,
+  cleanupCompressTmp,
+  CompressionCanceled,
+} from "@/lib/video-compress";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 
 interface SubmitPayload {
@@ -80,8 +87,9 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
   const [lastShared, setLastShared] = useState<LastShared | null>(null);
   const [compressAsk, setCompressAsk] = useState<SubmitPayload | null>(null);
   const [compressPct, setCompressPct] = useState<number | null>(null);
+  const [streamFixPct, setStreamFixPct] = useState<number | null>(null);
   const cancelCompressRef = useRef<(() => void) | null>(null);
-  const busyTransfer = uploadProgress !== null || compressPct !== null;
+  const busyTransfer = uploadProgress !== null || compressPct !== null || streamFixPct !== null;
 
   // Leaving mid-upload/compress silently kills the work — warn first
   useEffect(() => {
@@ -208,12 +216,35 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
     });
   };
 
-  const performSubmit = async (payload: SubmitPayload) => {
+  // Camera MP4/MOVs keep their index (moov) at the file's end — the player
+  // must fetch the tail before it can start. A stream-copy remux into
+  // fragmented MP4 (no re-encode, I/O-speed) makes playback start instantly.
+  const prepareVideoForStreaming = async (payload: SubmitPayload): Promise<SubmitPayload> => {
+    const f = payload.file;
+    if (!f || !f.type.startsWith("video/") || !canCompressVideo()) return payload;
+    const streamable = await probeMp4Streamable(f).catch(() => null);
+    if (streamable !== false) return payload;
+    setStreamFixPct(0);
+    try {
+      const remuxed = await remuxVideo(f, setStreamFixPct, (cancel) => {
+        cancelCompressRef.current = cancel;
+      });
+      return { ...payload, file: remuxed };
+    } catch {
+      return payload; // canceled or codec can't be copied — share untouched
+    } finally {
+      setStreamFixPct(null);
+      cancelCompressRef.current = null;
+    }
+  };
+
+  const performSubmit = async (rawPayload: SubmitPayload) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
 
     try {
+      const payload = await prepareVideoForStreaming(rawPayload);
       // Chunked path: required past the single-request ceiling, and preferred
       // for signed-in users beyond one chunk — big single bodies blow the
       // Worker memory limit server-side (Cloudflare 1102)
@@ -583,6 +614,26 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
             title={title.trim() || undefined}
             file={p2pFile}
           />
+        </div>
+      )}
+
+      {/* Stream-copy remux of moov-at-end videos */}
+      {streamFixPct !== null && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-overlay-in">
+          <div className="pixel-border bg-pixel-darker p-6 max-w-md w-full mx-4 space-y-4 animate-modal-in">
+            <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-cyan text-xs">
+              {t("stream.title")}
+            </h3>
+            <RetroProgress percent={streamFixPct} color="cyan" label={t("stream.progress")} />
+            <div className="flex justify-end">
+              <button
+                onClick={() => cancelCompressRef.current?.()}
+                className="px-4 py-2 border border-pixel-gray/30 text-pixel-gray text-xs font-[family-name:var(--font-pixel-stack)] hover:text-pixel-pink hover:border-pixel-pink/40 transition-all"
+              >
+                {t("confirm.cancel")}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

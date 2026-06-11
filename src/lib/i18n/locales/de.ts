@@ -8,6 +8,8 @@ export const de: Record<TranslationKey, string> = {
   "header.tip.body": "Klick auf den {icon}-Button für eine kurze Anleitung zum Teilen von Dateien, Text & Code.",
   "header.tip.dismiss": "Hinweis ausblenden",
   "footer.version": "VERSHARE v1.0",
+  "stream.progress": "Optimierung für sofortiges Streaming — Tab bitte offen lassen",
+  "stream.title": "VIDEO WIRD VORBEREITET",
   "theme.toLight": "Zum hellen Design wechseln",
   "theme.toDark": "Zum dunklen Design wechseln",
   "lang.switch": "Sprache ändern",

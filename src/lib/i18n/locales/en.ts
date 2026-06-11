@@ -8,6 +8,8 @@ export const en = {
   "header.tip.body": "Click the {icon} button for a quick guide on sharing files, text & code.",
   "header.tip.dismiss": "Dismiss tip",
   "footer.version": "VERSHARE v1.0",
+  "stream.progress": "Optimizing for instant streaming — keep this tab open",
+  "stream.title": "PREPARING VIDEO",
   "theme.toLight": "Switch to light theme",
   "theme.toDark": "Switch to dark theme",
   "lang.switch": "Change language",

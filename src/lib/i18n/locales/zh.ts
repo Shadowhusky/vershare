@@ -8,6 +8,8 @@ export const zh: Record<TranslationKey, string> = {
   "header.tip.body": "点击 {icon} 按钮，快速了解如何分享文件、文本和代码。",
   "header.tip.dismiss": "关闭提示",
   "footer.version": "VERSHARE v1.0",
+  "stream.progress": "正在优化以便即时流式播放——请保持页面打开",
+  "stream.title": "正在准备视频",
   "theme.toLight": "切换到浅色主题",
   "theme.toDark": "切换到深色主题",
   "lang.switch": "切换语言",

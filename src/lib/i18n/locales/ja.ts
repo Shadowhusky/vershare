@@ -8,6 +8,8 @@ export const ja: Record<TranslationKey, string> = {
   "header.tip.body": "{icon} ボタンをクリックすると、ファイル・テキスト・コードの共有方法がすぐにわかります。",
   "header.tip.dismiss": "ヒントを閉じる",
   "footer.version": "VERSHARE v1.0",
+  "stream.progress": "すぐに再生できるよう最適化しています——タブを閉じないでください",
+  "stream.title": "動画を準備中",
   "theme.toLight": "ライトテーマに切り替え",
   "theme.toDark": "ダークテーマに切り替え",
   "lang.switch": "言語を変更",
