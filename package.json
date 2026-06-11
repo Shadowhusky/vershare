@@ -21,6 +21,7 @@
     "highlight.js": "^11.11.1",
     "jose": "^6.2.3",
     "lucide-react": "^0.577.0",
+    "mediabunny": "^1.46.0",
     "nanoid": "^5.1.7",
     "next": "^16.2.9",
     "nodemailer": "^8.0.2",

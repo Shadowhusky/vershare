@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { Copy, Check, Share2 } from "lucide-react";
 import { useT } from "@/lib/i18n";
@@ -21,7 +22,11 @@ export default function ShareLinkBox({ shareId }: { shareId: string }) {
     }
   };
 
-  const hasNativeShare = typeof navigator !== "undefined" && !!navigator.share;
+  // gate behind mount so SSR and first client render agree (React #418)
+  const [hasNativeShare, setHasNativeShare] = useState(false);
+  useEffect(() => {
+    setHasNativeShare(typeof navigator.share === "function");
+  }, []);
 
   return (
     <div className="pixel-border p-4 bg-pixel-green/5">

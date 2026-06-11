@@ -24,13 +24,22 @@ import SmartDropZone, { SmartDetectResult } from "./SmartDropZone";
 import ShareLinkBox from "@/components/shared/ShareLinkBox";
 import P2PSharePanel from "./P2PSharePanel";
 import RetroProgress from "@/components/shared/RetroProgress";
+import SharedPreview, { LastShared } from "./SharedPreview";
 import { ShareType } from "@/lib/types";
 import { HistoryItem } from "@/hooks/use-upload-history";
 import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
 import { MAX_FILE_SIZE, formatFileSize } from "@/lib/constants";
 import { uploadFileMultipart, UploadCanceledError } from "@/lib/multipart-upload";
+import { canCompressVideo, compressVideo, CompressionCanceled } from "@/lib/video-compress";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
+
+interface SubmitPayload {
+  type: ShareType;
+  content?: string;
+  language?: string;
+  file?: File;
+}
 
 const TABS: { type: ShareType; labelKey: TranslationKey; icon: React.ReactNode }[] = [
   { type: "text", labelKey: "create.tab.text", icon: <Type size={14} /> },
@@ -68,15 +77,30 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
   const [toast, setToast] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{ loaded: number; total: number } | null>(null);
   const uploadAbortRef = useRef<AbortController | null>(null);
-  const isUploading = uploadProgress !== null;
+  const [lastShared, setLastShared] = useState<LastShared | null>(null);
+  const [compressAsk, setCompressAsk] = useState<SubmitPayload | null>(null);
+  const [compressPct, setCompressPct] = useState<number | null>(null);
+  const cancelCompressRef = useRef<(() => void) | null>(null);
+  const busyTransfer = uploadProgress !== null || compressPct !== null;
 
-  // Leaving mid-upload silently kills the transfer — warn first
+  // Leaving mid-upload/compress silently kills the work — warn first
   useEffect(() => {
-    if (!isUploading) return;
+    if (!busyTransfer) return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [isUploading]);
+  }, [busyTransfer]);
+
+  // Object URLs hold the shared File alive — release on replace/unmount
+  const lastObjectUrlRef = useRef<string | null>(null);
+  useEffect(() => {
+    const prev = lastObjectUrlRef.current;
+    if (prev && prev !== lastShared?.objectUrl) URL.revokeObjectURL(prev);
+    lastObjectUrlRef.current = lastShared?.objectUrl ?? null;
+  }, [lastShared]);
+  useEffect(() => () => {
+    if (lastObjectUrlRef.current) URL.revokeObjectURL(lastObjectUrlRef.current);
+  }, []);
 
   const [demoText, setDemoText] = useState<string | null>(null);
 
@@ -145,8 +169,18 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
   const submitData = getSubmitData();
   const canSubmit = submitData !== null;
 
-  const finishCreate = async (data: Record<string, any>) => {
+  const finishCreate = async (data: Record<string, any>, payload: SubmitPayload) => {
     setShareId(data.id);
+    setLastShared(
+      payload.file
+        ? {
+            type: payload.type,
+            fileName: payload.file.name,
+            mime: payload.file.type || "application/octet-stream",
+            objectUrl: URL.createObjectURL(payload.file),
+          }
+        : { type: payload.type, content: payload.content, language: payload.language }
+    );
 
     // Auto-copy to clipboard (no native share popup)
     const shareUrl = `${window.location.origin}/s/${data.id}`;
@@ -169,39 +203,39 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
     });
   };
 
-  const handleSubmit = async () => {
-    if (!submitData || isSubmitting) return;
+  const performSubmit = async (payload: SubmitPayload) => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
     setError(null);
 
     try {
       // Chunked path for files past the single-request ceiling
-      if (submitData.file && submitData.file.size > MAX_FILE_SIZE) {
+      if (payload.file && payload.file.size > MAX_FILE_SIZE) {
         if (!userEmail) {
           openAuth();
           throw new Error(t("create.upload.signInRequired"));
         }
         const controller = new AbortController();
         uploadAbortRef.current = controller;
-        setUploadProgress({ loaded: 0, total: submitData.file.size });
+        setUploadProgress({ loaded: 0, total: payload.file.size });
         const data = await uploadFileMultipart({
-          file: submitData.file,
-          type: submitData.type === "image" ? "image" : "file",
+          file: payload.file,
+          type: payload.type === "image" ? "image" : "file",
           title: title.trim() || undefined,
           permanent: permanent || undefined,
           onProgress: (loaded, total) => setUploadProgress({ loaded, total }),
           signal: controller.signal,
         });
-        await finishCreate(data as unknown as Record<string, any>);
+        await finishCreate(data as unknown as Record<string, any>, payload);
         return;
       }
 
       let res: Response;
 
-      if (submitData.file) {
+      if (payload.file) {
         const formData = new FormData();
-        formData.append("file", submitData.file);
-        formData.append("type", submitData.type);
+        formData.append("file", payload.file);
+        formData.append("type", payload.type);
         if (title.trim()) formData.append("title", title.trim());
         if (permanent) formData.append("permanent", "true");
         res = await fetch("/api/shares", { method: "POST", body: formData });
@@ -210,10 +244,10 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: submitData.type,
+            type: payload.type,
             title: title.trim() || undefined,
-            content: submitData.content,
-            language: submitData.language,
+            content: payload.content,
+            language: payload.language,
             permanent: permanent || undefined,
           }),
         });
@@ -225,7 +259,7 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
       }
 
       const data = await res.json() as Record<string, any>;
-      await finishCreate(data);
+      await finishCreate(data, payload);
     } catch (err) {
       if (!(err instanceof UploadCanceledError)) {
         setError(err instanceof Error ? err.message : t("create.error.generic"));
@@ -237,8 +271,50 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
     }
   };
 
+  const handleSubmit = async () => {
+    if (!submitData || isSubmitting) return;
+    const f = submitData.file;
+    // Big videos: offer in-browser compression before committing to the upload
+    if (f && f.type.startsWith("video/") && f.size > MAX_FILE_SIZE && canCompressVideo()) {
+      setCompressAsk(submitData);
+      return;
+    }
+    await performSubmit(submitData);
+  };
+
+  const startCompress = async () => {
+    if (!compressAsk) return;
+    const payload = compressAsk;
+    setCompressPct(0);
+    try {
+      const compressed = await compressVideo(payload.file!, setCompressPct, (cancel) => {
+        cancelCompressRef.current = cancel;
+      });
+      setCompressAsk(null);
+      setCompressPct(null);
+      await performSubmit({ ...payload, file: compressed });
+    } catch (err) {
+      setCompressAsk(null);
+      setCompressPct(null);
+      if (err instanceof CompressionCanceled) return;
+      setToast(t("compress.failed"));
+      setTimeout(() => setToast(null), 4000);
+      await performSubmit(payload);
+    } finally {
+      cancelCompressRef.current = null;
+    }
+  };
+
+  const shareOriginal = async () => {
+    if (!compressAsk) return;
+    const payload = compressAsk;
+    setCompressAsk(null);
+    await performSubmit(payload);
+  };
+
   const handleReset = () => {
     setShareId(null);
+    setLastShared(null);
     setTitle("");
     setSmartResult(null);
     setTextContent("");
@@ -253,6 +329,7 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
     return (
       <div className="space-y-6">
         <ShareLinkBox shareId={shareId} />
+        {lastShared && <SharedPreview shared={lastShared} />}
         <button
           onClick={handleReset}
           className="w-full py-3 border-2 border-pixel-cyan/30 text-pixel-cyan font-[family-name:var(--font-pixel-stack)] text-sm hover:bg-pixel-cyan/10 hover:border-pixel-cyan/50 transition-all"
@@ -497,6 +574,61 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
             title={title.trim() || undefined}
             file={p2pFile}
           />
+        </div>
+      )}
+
+      {/* Compression offer for big videos */}
+      {compressAsk && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-overlay-in"
+          onClick={() => {
+            if (compressPct === null) setCompressAsk(null);
+          }}
+        >
+          <div
+            className="pixel-border bg-pixel-darker p-6 max-w-md w-full mx-4 space-y-4 animate-modal-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-amber text-xs">
+              {t("compress.title")}
+            </h3>
+            {compressPct === null ? (
+              <>
+                <p className="text-pixel-gray text-sm">
+                  {t("compress.body", {
+                    name: compressAsk.file!.name,
+                    size: formatFileSize(compressAsk.file!.size),
+                  })}
+                </p>
+                <div className="flex gap-3 justify-end flex-wrap">
+                  <button
+                    onClick={shareOriginal}
+                    className="px-4 py-2 border border-pixel-gray/30 text-pixel-gray text-xs font-[family-name:var(--font-pixel-stack)] hover:bg-pixel-gray/10 transition-all"
+                  >
+                    {t("compress.original")}
+                  </button>
+                  <button
+                    onClick={startCompress}
+                    className="px-4 py-2 border border-pixel-green text-pixel-green text-xs font-[family-name:var(--font-pixel-stack)] hover:bg-pixel-green/10 transition-all animate-pulse-glow"
+                  >
+                    {t("compress.action")}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <RetroProgress percent={compressPct} color="purple" label={t("compress.progress")} />
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => cancelCompressRef.current?.()}
+                    className="px-4 py-2 border border-pixel-gray/30 text-pixel-gray text-xs font-[family-name:var(--font-pixel-stack)] hover:text-pixel-pink hover:border-pixel-pink/40 transition-all"
+                  >
+                    {t("confirm.cancel")}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 

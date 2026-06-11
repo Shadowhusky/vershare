@@ -32,8 +32,14 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showAgentTip, setShowAgentTip] = useState(false);
-  const url = typeof window !== "undefined" ? `${window.location.origin}/s/${share.id}` : "";
-  const rawUrl = typeof window !== "undefined" ? `${window.location.origin}/api/shares/${share.id}/raw` : "";
+  // navigator-dependent UI must render after mount — SSR can't know about it,
+  // and a mismatched extra node breaks hydration (React #418)
+  const [canNativeShare, setCanNativeShare] = useState(false);
+  useEffect(() => {
+    setCanNativeShare(typeof navigator.share === "function");
+  }, []);
+  const sharePath = `/s/${share.id}`;
+  const rawPath = `/api/shares/${share.id}/raw`;
   const meta = TYPE_META[share.type] || TYPE_META.text;
   const isOwner = !!share.isOwner;
 
@@ -115,20 +121,20 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
   };
 
   const handleCopy = async () => {
-    await copy(url);
+    await copy(window.location.origin + sharePath);
     showToast(t("view.toast.linkCopied"));
   };
 
   const handleAgentCopy = async () => {
     dismissAgentTip.current();
-    await copy(rawUrl);
+    await copy(window.location.origin + rawPath);
     showToast(t("view.toast.agentLinkCopied"));
   };
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: share.title || "VerShare", url });
+        await navigator.share({ title: share.title || "VerShare", url: window.location.origin + sharePath });
         showToast(t("view.toast.shared"));
       } catch {
         // cancelled
@@ -239,7 +245,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
               </div>
             )}
           </div>
-          {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
+          {canNativeShare && (
             <button
               onClick={handleShare}
               className="px-3 py-2 border border-pixel-cyan/30 text-pixel-cyan text-sm font-[family-name:var(--font-pixel-stack)] hover:bg-pixel-cyan/10 transition-all"
