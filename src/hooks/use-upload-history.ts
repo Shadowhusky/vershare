@@ -51,6 +51,7 @@ export function useUploadHistory(userEmail: string | null) {
         });
 
     if (userEmail) {
+      setLoading(true);
       const local = getLocalHistory();
       if (local.length > 0) {
         fetch("/api/auth/history/claim", {

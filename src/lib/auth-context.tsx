@@ -3,16 +3,21 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
   ReactNode,
 } from "react";
 import AuthModal from "@/components/auth/AuthModal";
 
+export interface InitialAuth {
+  email: string | null;
+  verified: boolean;
+  wizardSeen: boolean;
+}
+
 interface AuthContextValue {
   email: string | null;
   verified: boolean;
-  loading: boolean;
+  wizardSeen: boolean;
   openAuth: () => void;
   logout: () => Promise<void>;
 }
@@ -20,29 +25,23 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({
   email: null,
   verified: false,
-  loading: true,
+  wizardSeen: false,
   openAuth: () => {},
   logout: async () => {},
 });
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [email, setEmail] = useState<string | null>(null);
-  const [verified, setVerified] = useState(false);
-  const [loading, setLoading] = useState(true);
+// Auth state arrives server-rendered (layout decodes the session cookie), so
+// the first paint is already correct — no loading phase, no /api/auth/me fetch.
+export function AuthProvider({
+  children,
+  initialAuth,
+}: {
+  children: ReactNode;
+  initialAuth: InitialAuth;
+}) {
+  const [email, setEmail] = useState<string | null>(initialAuth.email);
+  const [verified, setVerified] = useState(initialAuth.verified);
   const [modalOpen, setModalOpen] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => (r.ok ? (r.json() as Record<string, any>) : null))
-      .then((data) => {
-        if (data?.email) {
-          setEmail(data.email);
-          setVerified(data.emailVerified === true);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
 
   const openAuth = useCallback(() => setModalOpen(true), []);
 
@@ -53,7 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ email, verified, loading, openAuth, logout }}>
+    <AuthContext.Provider
+      value={{ email, verified, wizardSeen: initialAuth.wizardSeen, openAuth, logout }}
+    >
       {children}
       <AuthModal
         open={modalOpen}

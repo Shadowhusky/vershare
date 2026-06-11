@@ -5,6 +5,7 @@ import Header from "@/components/shared/Header";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/lib/auth-context";
 import { isLocale, parseAcceptLanguage, LOCALE_COOKIE } from "@/lib/i18n/shared";
+import { getSessionSnapshot } from "@/lib/user-auth";
 import Footer from "@/components/shared/Footer";
 import "./globals.css";
 
@@ -99,10 +100,18 @@ export default async function RootLayout({
     ? cookieLocale
     : parseAcceptLanguage((await headers()).get("accept-language"));
   const theme = cookieStore.get("vershare_theme")?.value === "light" ? "light" : undefined;
+  const initialAuth = await getSessionSnapshot();
+  // The CJK font is lazy via unicode-range; preloading it for CJK locales
+  // starts the download at HTML parse instead of after first layout.
+  const cjkFont =
+    locale === "zh" ? "/fonts/fusion-pixel-sc.woff2" : locale === "ja" ? "/fonts/fusion-pixel-jp.woff2" : null;
 
   return (
     <html lang={locale} data-theme={theme} suppressHydrationWarning>
       <head>
+        {cjkFont && (
+          <link rel="preload" href={cjkFont} as="font" type="font/woff2" crossOrigin="anonymous" />
+        )}
         <script
           dangerouslySetInnerHTML={{
             __html:
@@ -134,7 +143,7 @@ export default async function RootLayout({
         className={`${pressStart.variable} ${jetbrains.variable} scanlines`}
       >
         <I18nProvider initialLocale={locale}>
-          <AuthProvider>
+          <AuthProvider initialAuth={initialAuth}>
           <div className="relative z-10 h-dvh flex flex-col overflow-hidden">
             <Header />
 

@@ -6,6 +6,7 @@ import HelpWizard from "./HelpWizard";
 import ThemeToggle from "./ThemeToggle";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useT } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 import ProfileMenu from "./ProfileMenu";
 
 const LS_KEY = "vershare_wizard_seen";
@@ -13,34 +14,23 @@ const LS_KEY = "vershare_wizard_seen";
 export default function Header() {
   const t = useT();
   const pathname = usePathname();
+  const { wizardSeen } = useAuth();
   // The guided tour anchors elements that only exist on the home page
   const helpAvailable = pathname === "/";
   const [showHelp, setShowHelp] = useState(false);
   const [showTip, setShowTip] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Check localStorage first (anonymous users)
     if (localStorage.getItem(LS_KEY)) return;
-
-    // Check server for logged-in users
-    fetch("/api/auth/me")
-      .then((r) => (r.ok ? (r.json() as Record<string, any>) : null))
-      .then((data) => {
-        if (data?.wizardSeen) {
-          // Sync to localStorage so we don't check again
-          localStorage.setItem(LS_KEY, "1");
-          return;
-        }
-        // First visit — point at the help button instead of opening the wizard
-        setTimeout(() => setShowTip(true), 600);
-      })
-      .catch(() => {
-        // Not logged in, localStorage not set — first visit
-        setTimeout(() => setShowTip(true), 600);
-      });
-  }, []);
+    if (wizardSeen) {
+      // Server already knows — sync so we never re-check
+      localStorage.setItem(LS_KEY, "1");
+      return;
+    }
+    // First visit — point at the help button instead of opening the wizard
+    const id = setTimeout(() => setShowTip(true), 600);
+    return () => clearTimeout(id);
+  }, [wizardSeen]);
 
   const markSeen = () => {
     localStorage.setItem(LS_KEY, "1");

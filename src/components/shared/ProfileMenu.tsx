@@ -30,7 +30,7 @@ export default function ProfileMenu() {
     return (
       <button
         onClick={openAuth}
-        className="text-pixel-gray hover:text-pixel-cyan transition-colors p-1"
+        className="w-8 h-8 flex items-center justify-center text-pixel-gray hover:text-pixel-cyan transition-colors"
         aria-label={t("profile.signIn")}
       >
         <User size={18} />

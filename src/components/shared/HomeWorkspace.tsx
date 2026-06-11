@@ -15,12 +15,12 @@ interface Usage {
 
 export default function HomeWorkspace() {
   const t = useT();
-  const { email, loading: authLoading } = useAuth();
+  const { email } = useAuth();
   const { history, loading, addItem, updateItem, removeItem } = useUploadHistory(email);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [usage, setUsage] = useState<Usage | null>(null);
   const [seen, setSeen] = useState<HistoryItem[]>([]);
-  const [seenLoading, setSeenLoading] = useState(true);
+  const [seenLoading, setSeenLoading] = useState(!!email);
 
   const refreshUsage = useCallback(() => {
     if (!email) {
@@ -79,7 +79,7 @@ export default function HomeWorkspace() {
   };
 
   const sidebarHiddenOnMobile =
-    !loading && !authLoading && history.length === 0 && seen.length === 0;
+    !loading && history.length === 0 && seen.length === 0;
 
   return (
     <div className="lg:grid lg:h-full lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[340px_minmax(0,1fr)] lg:gap-6">
@@ -106,8 +106,8 @@ export default function HomeWorkspace() {
         <RecentDrops
           history={history}
           seen={seen}
-          loading={loading || authLoading}
-          seenLoading={seenLoading || authLoading}
+          loading={loading}
+          seenLoading={seenLoading}
           activeId={activeId}
           canEdit={!!email}
           usage={usage}

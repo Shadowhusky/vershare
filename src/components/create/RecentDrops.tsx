@@ -136,7 +136,7 @@ export default function RecentDrops({
           ))}
 
         {!isLoading && list.length === 0 && (
-          <div className="m-2 py-10 px-4 border-2 border-dashed [border-color:var(--pixel-border)] text-center space-y-3">
+          <div className="animate-fade-in m-2 py-10 px-4 border-2 border-dashed [border-color:var(--pixel-border)] text-center space-y-3">
             <p className="text-pixel-gray text-base">(=^･ω･^=)</p>
             <p className="font-[family-name:var(--font-pixel-stack)] text-xs text-pixel-gray pixel-cursor">
               {q
@@ -155,7 +155,7 @@ export default function RecentDrops({
 
         {!isLoading && list.length > 0 && (
           <>
-            <div className="hidden lg:block space-y-1">
+            <div className="animate-fade-in hidden lg:block space-y-1">
               {list.map((h) => (
                 <Row
                   key={h.share_id}
@@ -167,7 +167,7 @@ export default function RecentDrops({
                 />
               ))}
             </div>
-            <div className="lg:hidden space-y-1">
+            <div className="animate-fade-in lg:hidden space-y-1">
               {visible.map((h) => (
                 <Row
                   key={h.share_id}
@@ -191,10 +191,8 @@ export default function RecentDrops({
         )}
       </div>
 
-      {/* Storage usage */}
-      {canEdit && section === "mine" && usage && (
-        <UsageBar used={usage.used} limit={usage.limit} />
-      )}
+      {/* Storage usage — frame always reserved so the bar never pops the layout */}
+      {canEdit && section === "mine" && <UsageBar usage={usage} />}
 
       <ConfirmDialog
         open={!!pendingDelete}
@@ -213,17 +211,21 @@ export default function RecentDrops({
   );
 }
 
-function UsageBar({ used, limit }: { used: number; limit: number }) {
+function UsageBar({ usage }: { usage: { used: number; limit: number } | null }) {
   const t = useT();
-  const pct = Math.min(100, Math.round((used / limit) * 100));
+  const pct = usage ? Math.min(100, Math.round((usage.used / usage.limit) * 100)) : 0;
   const near = pct >= 90;
   return (
     <div className="shrink-0 px-3 py-2 border-t-2 [border-color:var(--pixel-border)] space-y-1">
       <div className="flex items-center justify-between text-[10px] font-[family-name:var(--font-pixel-stack)]">
         <span className="text-pixel-gray">{t("usage.label")}</span>
-        <span className={near ? "text-pixel-pink" : "text-pixel-gray"}>
-          {formatFileSize(used)} / {formatFileSize(limit)}
-        </span>
+        {usage ? (
+          <span className={`animate-fade-in ${near ? "text-pixel-pink" : "text-pixel-gray"}`}>
+            {formatFileSize(usage.used)} / {formatFileSize(usage.limit)}
+          </span>
+        ) : (
+          <span className="text-pixel-gray/40">···</span>
+        )}
       </div>
       <div className="h-2 w-full bg-[var(--pixel-accent-05)] border [border-color:var(--pixel-border)] overflow-hidden">
         <div

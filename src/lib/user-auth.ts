@@ -103,6 +103,32 @@ export async function getUserFromCookies(): Promise<string | null> {
   return result?.sub || null;
 }
 
+export interface SessionSnapshot {
+  email: string | null;
+  verified: boolean;
+  wizardSeen: boolean;
+}
+
+const ANON_SESSION: SessionSnapshot = { email: null, verified: false, wizardSeen: false };
+
+// Resolved server-side at render time so the first paint already shows the
+// signed-in UI — no client /api/auth/me round-trip, no avatar/email pop-in.
+export async function getSessionSnapshot(): Promise<SessionSnapshot> {
+  try {
+    const email = await getUserFromCookies();
+    if (!email) return ANON_SESSION;
+    const db = await getDb();
+    const row = await db
+      .prepare("SELECT email_verified, wizard_seen FROM users WHERE email = ?")
+      .bind(email)
+      .first<{ email_verified: number; wizard_seen: number }>();
+    if (!row) return ANON_SESSION;
+    return { email, verified: row.email_verified === 1, wizardSeen: row.wizard_seen === 1 };
+  } catch {
+    return ANON_SESSION;
+  }
+}
+
 export async function isUserVerified(email: string): Promise<boolean> {
   const db = await getDb();
   const row = await db

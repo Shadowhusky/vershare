@@ -1,0 +1,10 @@
+# Workers Assets cache rules — without these every font/image revalidates on
+# each load (max-age=0), causing visible font swap and image pop-in.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
