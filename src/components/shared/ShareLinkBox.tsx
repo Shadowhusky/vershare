@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { Copy, Check, Share2 } from "lucide-react";
 import { useT } from "@/lib/i18n";
+import posthog from "posthog-js";
 
 export default function ShareLinkBox({ shareId }: { shareId: string }) {
   const t = useT();
@@ -42,7 +43,7 @@ export default function ShareLinkBox({ shareId }: { shareId: string }) {
           onClick={(e) => (e.target as HTMLInputElement).select()}
         />
         <button
-          onClick={() => copy(url)}
+          onClick={() => { copy(url); posthog.capture("share_link_copied", { share_id: shareId }); }}
           className={`shrink-0 px-3 py-2 border-2 font-[family-name:var(--font-pixel-stack)] text-sm transition-all ${
             copied
               ? "bg-pixel-green/20 border-pixel-green text-pixel-green"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerUser, createUserToken, getUserSessionCookieOptions } from "@/lib/user-auth";
 import { sendVerificationEmail } from "@/lib/email";
+import { getPostHogClient, flushPostHog } from "@/lib/posthog-server";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json().catch(() => ({ email: "", password: "" })) as { email?: string; password?: string };
@@ -20,6 +21,11 @@ export async function POST(request: NextRequest) {
     const token = createUserToken(userEmail);
 
     const emailSent = await sendVerificationEmail(userEmail, verifyCode);
+
+    const posthog = getPostHogClient();
+    posthog.identify({ distinctId: userEmail, properties: { email: userEmail } });
+    posthog.capture({ distinctId: userEmail, event: "user_registered", properties: { email: userEmail, source: "email" } });
+    flushPostHog();
 
     const isDev = process.env.NODE_ENV !== "production";
     const response = NextResponse.json({

@@ -6,6 +6,7 @@ import { SHARE_TYPES, STORAGE_QUOTA_BYTES } from "@/lib/constants";
 import { getBaseUrl } from "@/lib/url";
 import { getUserFromRequest, isUserVerified, addUploadHistory } from "@/lib/user-auth";
 import { inferMimeType } from "@/lib/mime";
+import { getPostHogClient, flushPostHog } from "@/lib/posthog-server";
 
 
 export async function GET(request: NextRequest) {
@@ -92,6 +93,23 @@ export async function POST(request: NextRequest) {
         await addUploadHistory(share.id, userEmail, share.type, share.title || null, share.fileName || null, share.fileSize || null, share.expiresAt || null);
       }
 
+      const posthog = getPostHogClient();
+      posthog.capture({
+        distinctId: userEmail || "anonymous",
+        event: "share_created",
+        properties: {
+          share_id: share.id,
+          share_type: share.type,
+          is_permanent: share.expiresAt === null,
+          has_title: !!share.title,
+          is_authenticated: !!userEmail,
+          file_size: share.fileSize,
+          mime_type: share.mimeType,
+          source: "api_file",
+        },
+      });
+      flushPostHog();
+
       return NextResponse.json({
         id: share.id,
         type: share.type,
@@ -139,6 +157,21 @@ export async function POST(request: NextRequest) {
     if (userEmail) {
       await addUploadHistory(share.id, userEmail, share.type, share.title || null, null, null, share.expiresAt || null);
     }
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: userEmail || "anonymous",
+      event: "share_created",
+      properties: {
+        share_id: share.id,
+        share_type: share.type,
+        is_permanent: share.expiresAt === null,
+        has_title: !!share.title,
+        is_authenticated: !!userEmail,
+        source: "api_text",
+      },
+    });
+    flushPostHog();
 
     return NextResponse.json({
       id: share.id,

@@ -40,6 +40,7 @@ import {
   CompressionCanceled,
 } from "@/lib/video-compress";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
+import posthog from "posthog-js";
 
 interface SubmitPayload {
   type: ShareType;
@@ -194,6 +195,17 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
           }
         : { type: payload.type, content: payload.content, language: payload.language }
     );
+
+    posthog.capture("share_created", {
+      share_type: payload.type,
+      is_permanent: data.expiresAt === null,
+      has_title: !!data.title,
+      is_authenticated: !!userEmail,
+      is_file: !!payload.file,
+      file_size: payload.file?.size,
+      file_mime_type: payload.file?.type || undefined,
+      share_id: data.id,
+    });
 
     // Auto-copy to clipboard (no native share popup)
     const shareUrl = `${window.location.origin}/s/${data.id}`;
@@ -696,7 +708,7 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] text-center px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm animate-fade-in">
           {toast}
         </div>
       )}

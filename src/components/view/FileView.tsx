@@ -5,6 +5,7 @@ import { FileIcon, Download } from "lucide-react";
 import ImageLightbox from "@/components/shared/ImageLightbox";
 import MediaPreview, { isPreviewable } from "./MediaPreview";
 import { useT } from "@/lib/i18n";
+import posthog from "posthog-js";
 
 export default function FileView({ share }: { share: ShareMetadata }) {
   const t = useT();
@@ -43,6 +44,12 @@ export default function FileView({ share }: { share: ShareMetadata }) {
         <a
           href={rawUrl}
           download={share.fileName}
+          onClick={() => posthog.capture("file_downloaded", {
+            share_id: share.id,
+            file_name: share.fileName,
+            file_size: share.fileSize,
+            mime_type: share.mimeType,
+          })}
           className="shrink-0 px-6 py-3 border-2 border-pixel-green text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm hover:bg-pixel-green/10 transition-all flex items-center gap-2"
         >
           <Download size={16} />

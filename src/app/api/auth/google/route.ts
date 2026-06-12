@@ -5,6 +5,7 @@ import {
   createUserToken,
   getUserSessionCookieOptions,
 } from "@/lib/user-auth";
+import { getPostHogClient, flushPostHog } from "@/lib/posthog-server";
 
 export async function POST(request: NextRequest) {
   const { credential } = (await request
@@ -18,6 +19,11 @@ export async function POST(request: NextRequest) {
   try {
     const profile = await verifyGoogleCredential(credential);
     await upsertGoogleUser(profile.email, profile.sub);
+
+    const posthog = getPostHogClient();
+    posthog.identify({ distinctId: profile.email, properties: { email: profile.email } });
+    posthog.capture({ distinctId: profile.email, event: "google_sign_in", properties: { email: profile.email } });
+    flushPostHog();
 
     const token = createUserToken(profile.email);
     const response = NextResponse.json({

@@ -7,6 +7,7 @@ import {
   ReactNode,
 } from "react";
 import AuthModal from "@/components/auth/AuthModal";
+import posthog from "posthog-js";
 
 export interface InitialAuth {
   email: string | null;
@@ -47,6 +48,7 @@ export function AuthProvider({
 
   const logout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    posthog.reset();
     setEmail(null);
     setVerified(false);
   }, []);

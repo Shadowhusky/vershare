@@ -12,6 +12,7 @@ import { Copy, Check, Type, FileText, Code, FileIcon, ImageIcon, Clock, Infinity
 import { useT } from "@/lib/i18n";
 import type { TranslationKey } from "@/lib/i18n/locales/en";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import posthog from "posthog-js";
 
 const TYPE_META: Record<string, { icon: React.ReactNode; labelKey: TranslationKey }> = {
   text: { icon: <Type size={14} />, labelKey: "view.type.text" },
@@ -92,6 +93,11 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
       const data = (await res.json().catch(() => ({}))) as Record<string, any>;
       if (!res.ok) throw new Error(data.error || t("view.renew.failed"));
       setExpiresAt(data.expiresAt);
+      posthog.capture("share_expiry_updated", {
+        share_id: share.id,
+        share_type: share.type,
+        expiry_action: expiry,
+      });
       showToast(t("view.expiryUpdated"));
     } catch (err) {
       showToast(err instanceof Error ? err.message : t("view.renew.failed"));
@@ -109,6 +115,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
         const data = (await res.json().catch(() => ({}))) as Record<string, any>;
         throw new Error(data.error || t("delete.failed"));
       }
+      posthog.capture("share_deleted", { share_id: share.id, share_type: share.type });
       window.dispatchEvent(new CustomEvent("vershare:close-share", { detail: { id: share.id } }));
       // standalone /s/[id] page → bounce home; opened in a tab the event closes it
       if (window.location.pathname.startsWith("/s/")) {
@@ -286,7 +293,7 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm animate-fade-in">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-2rem)] text-center px-6 py-3 pixel-border bg-pixel-darker text-pixel-green font-[family-name:var(--font-pixel-stack)] text-sm animate-fade-in">
           {toast}
         </div>
       )}

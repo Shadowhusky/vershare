@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { X, Loader2, Mail, CheckCircle } from "lucide-react";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { useT } from "@/lib/i18n";
+import posthog from "posthog-js";
 
 interface AuthModalProps {
   open: boolean;
@@ -93,6 +94,8 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
       if (tab === "login") {
         const meRes = await fetch("/api/auth/me");
         const me = await meRes.json() as Record<string, any>;
+        posthog.identify(data.email, { email: data.email });
+        posthog.capture("user_logged_in", { email: data.email, source: "email" });
         onAuth(data.email, me.emailVerified === true);
         if (!me.emailVerified) {
           if (me.verifyCode) setPendingCode(me.verifyCode);
@@ -101,6 +104,8 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
           close();
         }
       } else {
+        posthog.identify(data.email, { email: data.email });
+        posthog.capture("user_registered", { email: data.email, source: "email" });
         setPendingCode(data.verifyCode || null);
         setStep("verify");
         onAuth(data.email, false);
@@ -143,6 +148,8 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
         const data = await res.json() as Record<string, any>;
         throw new Error(data.error || t("auth.error.verificationFailed"));
       }
+      posthog.identify(email, { email, email_verified: true });
+      posthog.capture("user_email_verified", { email });
       onAuth(email, true);
       close();
     } catch (err) {
@@ -259,6 +266,8 @@ export default function AuthModal({ open, onClose, onAuth, initialEmail, initial
         <GoogleSignInButton
           onSuccess={(googleEmail) => {
             setError("");
+            posthog.identify(googleEmail, { email: googleEmail });
+            posthog.capture("user_logged_in", { email: googleEmail, source: "google" });
             onAuth(googleEmail, true);
             close();
           }}
