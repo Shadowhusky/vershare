@@ -300,6 +300,7 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
 
   // Idle mode — split drop zone
   return (
+    <div className="space-y-2">
     <div
       onDragEnter={handleDragEnter}
       onDragOver={(e) => e.preventDefault()}
@@ -331,12 +332,6 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
         </span>
       </button>
 
-      {sizeError && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[calc(100%-1rem)] max-w-xl px-3 py-1.5 bg-pixel-pink/20 border border-pixel-pink/40 text-pixel-pink text-xs font-[family-name:var(--font-pixel-stack)] text-center leading-relaxed z-10">
-          ! {sizeError}
-        </div>
-      )}
-
       {/* Right: Upload (wide) */}
       <button
         type="button"
@@ -351,6 +346,14 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
           {t("create.smart.hint")}
         </span>
       </button>
+    </div>
+
+    {/* In flow below the zone — overlaying the zone collided with its text */}
+    {sizeError && (
+      <div className="px-3 py-2 bg-pixel-pink/10 border border-pixel-pink/40 text-pixel-pink text-xs font-[family-name:var(--font-pixel-stack)] text-center leading-relaxed">
+        ! {sizeError}
+      </div>
+    )}
     </div>
   );
 }
