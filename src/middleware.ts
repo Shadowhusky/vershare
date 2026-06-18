@@ -30,6 +30,25 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
+  // Themed deep-link: ?theme=dark|light persists the theme as a cookie so an
+  // embed (e.g. the TV iframe on richardliao.uk) can force a theme without
+  // access to the site's localStorage. SSR reads the cookie on this same
+  // request, so there is no light-then-dark flash.
+  const themeParam = request.nextUrl.searchParams.get("theme");
+  if (
+    (themeParam === "dark" || themeParam === "light") &&
+    !pathname.startsWith("/api/")
+  ) {
+    request.cookies.set("vershare_theme", themeParam);
+    const response = NextResponse.next({ request });
+    response.cookies.set("vershare_theme", themeParam, {
+      path: "/",
+      maxAge: 31536000,
+      sameSite: "lax",
+    });
+    return response;
+  }
+
   // Admin routes — protected by admin login (cookie auth in the routes themselves)
   if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
     return NextResponse.next();
