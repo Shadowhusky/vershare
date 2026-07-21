@@ -24,6 +24,20 @@ const EXT_MIME: Record<string, string> = {
   aac: "audio/aac",
   opus: "audio/opus",
   wma: "audio/x-ms-wma",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  avif: "image/avif",
+  svg: "image/svg+xml",
+  bmp: "image/bmp",
+  pdf: "application/pdf",
+  zip: "application/zip",
+  "7z": "application/x-7z-compressed",
+  rar: "application/vnd.rar",
+  tar: "application/x-tar",
+  gz: "application/gzip",
 };
 
 export function inferMimeType(fileName: string, provided?: string | null): string {

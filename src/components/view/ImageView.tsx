@@ -2,7 +2,7 @@
 import { ShareMetadata } from "@/lib/types";
 import { formatFileSize } from "@/lib/constants";
 import { Download } from "lucide-react";
-import ImageLightbox from "@/components/shared/ImageLightbox";
+import ImageWithLightbox from "@/components/shared/ImageWithLightbox";
 import { useT } from "@/lib/i18n";
 
 export default function ImageView({ share }: { share: ShareMetadata }) {
@@ -12,7 +12,7 @@ export default function ImageView({ share }: { share: ShareMetadata }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-center">
-        <ImageLightbox
+        <ImageWithLightbox
           src={imageUrl}
           alt={share.title || share.fileName || t("view.image.alt")}
         />

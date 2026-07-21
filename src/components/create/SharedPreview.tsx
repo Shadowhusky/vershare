@@ -4,7 +4,9 @@ import TextView from "@/components/view/TextView";
 import MarkdownView from "@/components/view/MarkdownView";
 import CodeView from "@/components/view/CodeView";
 import MediaPreview, { isPreviewable } from "@/components/view/MediaPreview";
-import ImageLightbox from "@/components/shared/ImageLightbox";
+import ArchiveView from "@/components/view/ArchiveView";
+import ImageWithLightbox from "@/components/shared/ImageWithLightbox";
+import { isArchive } from "@/lib/archive";
 import { ShareType } from "@/lib/types";
 import { useT } from "@/lib/i18n";
 
@@ -15,6 +17,7 @@ export interface LastShared {
   fileName?: string;
   mime?: string;
   objectUrl?: string;
+  file?: File;
 }
 
 export default function SharedPreview({ shared }: { shared: LastShared }) {
@@ -28,10 +31,12 @@ export default function SharedPreview({ shared }: { shared: LastShared }) {
   } else if (shared.objectUrl) {
     if (shared.mime?.startsWith("image/")) {
       body = (
-        <div className="pixel-border p-2 bg-pixel-dark/50">
-          <ImageLightbox src={shared.objectUrl} alt={shared.fileName || ""} />
+        <div className="flex justify-center">
+          <ImageWithLightbox src={shared.objectUrl} alt={shared.fileName || ""} />
         </div>
       );
+    } else if (shared.file && isArchive(shared.mime, shared.fileName)) {
+      body = <ArchiveView source={{ blob: shared.file }} archiveName={shared.fileName} />;
     } else if (isPreviewable(shared.mime)) {
       body = <MediaPreview url={shared.objectUrl} mimeType={shared.mime!} fileName={shared.fileName} />;
     } else {

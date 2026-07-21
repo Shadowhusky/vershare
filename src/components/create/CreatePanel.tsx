@@ -192,6 +192,7 @@ export default function CreatePanel({ onCreated }: { onCreated: (item: HistoryIt
             fileName: payload.file.name,
             mime: payload.file.type || "application/octet-stream",
             objectUrl: URL.createObjectURL(payload.file),
+            file: payload.file,
           }
         : { type: payload.type, content: payload.content, language: payload.language }
     );

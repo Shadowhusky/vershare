@@ -4,7 +4,7 @@ import { ShareMetadata } from "@/lib/types";
 import TextView from "@/components/view/TextView";
 import MarkdownView from "@/components/view/MarkdownView";
 import CodeView from "@/components/view/CodeView";
-import ImageLightbox from "@/components/shared/ImageLightbox";
+import ImageWithLightbox from "@/components/shared/ImageWithLightbox";
 import MediaPreview, { isPreviewable } from "@/components/view/MediaPreview";
 import { formatFileSize } from "@/lib/constants";
 import { useEffect, useCallback } from "react";
@@ -67,12 +67,12 @@ export default function SharePreviewModal({ share, onClose }: SharePreviewModalP
         {share.type === "code" && share.content && <CodeView content={share.content} language={share.language} />}
         {share.type === "image" && (
           <div className="flex justify-center">
-            <ImageLightbox src={rawUrl} alt={share.fileName || "Image"} />
+            <ImageWithLightbox src={rawUrl} alt={share.fileName || "Image"} />
           </div>
         )}
         {share.type === "file" && isImage && (
           <div className="flex justify-center">
-            <ImageLightbox src={rawUrl} alt={share.fileName || "Image"} />
+            <ImageWithLightbox src={rawUrl} alt={share.fileName || "Image"} />
           </div>
         )}
         {share.type === "file" && hasMedia && (

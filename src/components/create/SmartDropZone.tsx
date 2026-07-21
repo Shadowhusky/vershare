@@ -1,7 +1,9 @@
 "use client";
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, X, ImageIcon, FileIcon, Type } from "lucide-react";
+import { Upload, X, ImageIcon, FileIcon, Type, FolderUp } from "lucide-react";
 import { MAX_FILE_SIZE, MAX_IMAGE_SIZE, MAX_UPLOAD_FILE_SIZE, formatFileSize } from "@/lib/constants";
+import { zipFiles, collectDroppedEntries } from "@/lib/archive";
+import RetroProgress from "@/components/shared/RetroProgress";
 import { ShareType } from "@/lib/types";
 import { useT } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth-context";
@@ -103,6 +105,7 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
   const [preview, setPreview] = useState<string | null>(null);
   const [detectedType, setDetectedType] = useState<ShareType>("text");
   const inputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dragCounter = useRef(0);
 
@@ -184,12 +187,72 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
     if (dragCounter.current === 0) setIsDragging(false);
   };
 
+  const [packing, setPacking] = useState<number | null>(null);
+
+  // Zip a folder (or multi-file selection) client-side into a single share
+  const packAndSet = useCallback(
+    async (toPack: { file: File; path: string }[], zipName: string) => {
+      setSizeError(null);
+      // Gate on the uncompressed total BEFORE doing minutes of zipping —
+      // the packed size can only be smaller, so an over-cap total is a
+      // guaranteed reject (and the common case is barely-compressible media)
+      const total = toPack.reduce((s, f) => s + f.file.size, 0);
+      const maxSize = email ? MAX_UPLOAD_FILE_SIZE : MAX_FILE_SIZE;
+      if (total > maxSize) {
+        setSizeError(
+          !email
+            ? t("create.smart.signInForLarge", {
+                max: formatFileSize(MAX_FILE_SIZE),
+                big: formatFileSize(MAX_UPLOAD_FILE_SIZE),
+              })
+            : t("create.smart.fileTooLarge", { size: formatFileSize(total), max: formatFileSize(maxSize) })
+        );
+        return;
+      }
+      setPacking(0);
+      try {
+        const zip = await zipFiles(toPack, zipName, setPacking);
+        handleFile(zip);
+      } catch {
+        setSizeError(t("create.smart.packFailed"));
+      } finally {
+        setPacking(null);
+      }
+    },
+    [handleFile, t, email]
+  );
+
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     dragCounter.current = 0;
-    const f = e.dataTransfer.files[0];
-    if (f) handleFile(f);
+    // DataTransfer is only live during the event — capture everything sync
+    const fileList = Array.from(e.dataTransfer.files);
+    const entriesPromise = collectDroppedEntries(e.dataTransfer.items);
+    void (async () => {
+      const { files: collected, folderName } = await entriesPromise.catch(() => ({
+        files: [],
+        folderName: null,
+      }));
+      if (collected.length > 0) {
+        await packAndSet(collected, `${folderName || "folder"}.zip`);
+      } else if (fileList.length > 1) {
+        await packAndSet(fileList.map((f) => ({ file: f, path: f.name })), "files.zip");
+      } else if (fileList[0]) {
+        handleFile(fileList[0]);
+      }
+    })();
+  };
+
+  const handleFolderPick = (list: FileList | null) => {
+    const files = Array.from(list || []).filter((f) => f.name !== ".DS_Store");
+    if (files.length === 0) return;
+    const paths = files.map((f) => f.webkitRelativePath || f.name);
+    const folderName = paths[0]?.includes("/") ? paths[0].split("/")[0] : "folder";
+    void packAndSet(
+      files.map((f, i) => ({ file: f, path: paths[i] })),
+      `${folderName}.zip`
+    );
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
@@ -311,11 +374,27 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
       <input
         ref={inputRef}
         type="file"
+        multiple
         className="absolute w-0 h-0 overflow-hidden opacity-0"
         tabIndex={-1}
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleFile(f);
+          const files = Array.from(e.target.files || []);
+          if (files.length > 1) {
+            void packAndSet(files.map((f) => ({ file: f, path: f.name })), "files.zip");
+          } else if (files[0]) {
+            handleFile(files[0]);
+          }
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={folderInputRef}
+        type="file"
+        {...{ webkitdirectory: "" }}
+        className="absolute w-0 h-0 overflow-hidden opacity-0"
+        tabIndex={-1}
+        onChange={(e) => {
+          handleFolderPick(e.target.files);
           e.target.value = "";
         }}
       />
@@ -348,10 +427,34 @@ export default function SmartDropZone({ onDetect, injectText }: SmartDropZonePro
       </button>
     </div>
 
+    {/* Folder picker */}
+    <div className="flex justify-end">
+      <button
+        type="button"
+        onClick={() => folderInputRef.current?.click()}
+        className="flex items-center gap-1.5 text-xs text-pixel-gray/70 hover:text-pixel-cyan transition-colors"
+      >
+        <FolderUp size={12} />
+        {t("create.smart.pickFolder")}
+      </button>
+    </div>
+
     {/* In flow below the zone — overlaying the zone collided with its text */}
     {sizeError && (
       <div className="px-3 py-2 bg-pixel-pink/10 border border-pixel-pink/40 text-pixel-pink text-xs font-[family-name:var(--font-pixel-stack)] text-center leading-relaxed">
         ! {sizeError}
+      </div>
+    )}
+
+    {/* Folder packing progress */}
+    {packing !== null && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-overlay-in">
+        <div className="pixel-border bg-pixel-darker p-6 max-w-md w-full mx-4 space-y-4 animate-modal-in">
+          <h3 className="font-[family-name:var(--font-pixel-stack)] text-pixel-amber text-xs">
+            {t("create.smart.packTitle")}
+          </h3>
+          <RetroProgress percent={packing} color="amber" label={t("create.smart.packing")} />
+        </div>
       </div>
     )}
     </div>

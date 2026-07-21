@@ -128,7 +128,11 @@ export default function ShareView({ share }: { share: ShareMetadata }) {
   };
 
   const handleCopy = async () => {
-    await copy(window.location.origin + sharePath);
+    // On the share page, copy the live URL — it carries the viewing state
+    const url = window.location.pathname.startsWith("/s/")
+      ? window.location.href
+      : window.location.origin + sharePath;
+    await copy(url);
     showToast(t("view.toast.linkCopied"));
   };
 

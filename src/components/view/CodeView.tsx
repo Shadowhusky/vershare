@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useMemo, useEffect, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import hljs from "highlight.js";
+import hljs from "@/lib/hljs";
 
 interface CodeViewProps {
   content: string;

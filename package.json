@@ -16,6 +16,7 @@
     "@fontsource/fusion-pixel-12px-proportional-sc": "^5.2.5",
     "@google/genai": "^1.45.0",
     "@tanstack/react-virtual": "^3.13.23",
+    "@zip.js/zip.js": "^2.8.33",
     "better-sqlite3": "^12.8.0",
     "clsx": "^2.1.1",
     "highlight.js": "^11.11.1",

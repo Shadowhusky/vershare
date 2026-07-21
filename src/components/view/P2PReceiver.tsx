@@ -12,7 +12,7 @@ import RetroProgress from "@/components/shared/RetroProgress";
 import TextView from "./TextView";
 import MarkdownView from "./MarkdownView";
 import CodeView from "./CodeView";
-import ImageLightbox from "@/components/shared/ImageLightbox";
+import ImageWithLightbox from "@/components/shared/ImageWithLightbox";
 import MediaPreview, { isPreviewable } from "./MediaPreview";
 import type Peer from "peerjs";
 import { useT } from "@/lib/i18n";
@@ -207,7 +207,7 @@ export default function P2PReceiver({ peerId }: P2PReceiverProps) {
 
           {metadata.type === "image" && fileBlobUrl && (
             <div className="space-y-4">
-              <ImageLightbox
+              <ImageWithLightbox
                 src={fileBlobUrl}
                 alt={metadata.fileName || t("view.p2p.receivedImageAlt")}
               />
@@ -225,7 +225,7 @@ export default function P2PReceiver({ peerId }: P2PReceiverProps) {
           {metadata.type === "file" && fileBlobUrl && (
             <div className="space-y-4">
               {metadata.mimeType?.startsWith("image/") && (
-                <ImageLightbox
+                <ImageWithLightbox
                   src={fileBlobUrl}
                   alt={metadata.fileName || t("view.p2p.receivedFileAlt")}
                 />

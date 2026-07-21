@@ -2,28 +2,32 @@
 import { ShareMetadata } from "@/lib/types";
 import { formatFileSize } from "@/lib/constants";
 import { FileIcon, Download } from "lucide-react";
-import ImageLightbox from "@/components/shared/ImageLightbox";
+import ImageWithLightbox from "@/components/shared/ImageWithLightbox";
 import MediaPreview, { isPreviewable } from "./MediaPreview";
+import ArchiveView from "./ArchiveView";
+import { isArchive } from "@/lib/archive";
 import { useT } from "@/lib/i18n";
 import posthog from "posthog-js";
 
 export default function FileView({ share }: { share: ShareMetadata }) {
   const t = useT();
   const isImage = share.mimeType?.startsWith("image/") ?? false;
-  const hasMediaPreview = !isImage && isPreviewable(share.mimeType);
+  const isZip = !isImage && isArchive(share.mimeType, share.fileName);
+  const hasMediaPreview = !isImage && !isZip && isPreviewable(share.mimeType);
   const rawUrl = `/api/shares/${share.id}/raw`;
 
   return (
     <div className="space-y-4">
       {isImage && (
         <div className="flex justify-center">
-          <ImageLightbox src={rawUrl} alt={share.fileName || t("view.file.previewAlt")} />
+          <ImageWithLightbox src={rawUrl} alt={share.fileName || t("view.file.previewAlt")} />
         </div>
       )}
+      {isZip && <ArchiveView source={{ url: rawUrl }} archiveName={share.fileName} />}
       {hasMediaPreview && (
         <MediaPreview url={rawUrl} mimeType={share.mimeType!} fileName={share.fileName} />
       )}
-      {!isImage && !hasMediaPreview && (
+      {!isImage && !isZip && !hasMediaPreview && (
         <div className="pixel-border p-6 bg-pixel-dark/50 flex flex-col items-center gap-4">
           <FileIcon size={48} className="text-pixel-cyan" />
           <div className="text-center">
