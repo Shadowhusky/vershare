@@ -369,6 +369,7 @@ export const zh: Record<TranslationKey, string> = {
   "seen.empty.title": "暂无内容",
   "seen.empty.body": "你打开过的他人投放会显示在这里。",
   "lightbox.close": "关闭",
+  "lightbox.copyLink": "复制当前画面的链接",
   "lightbox.loadFailed": "无法加载此图片",
   "lightbox.next": "下一张",
   "lightbox.prev": "上一张",

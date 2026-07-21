@@ -15,6 +15,7 @@ export default function ImageView({ share }: { share: ShareMetadata }) {
         <ImageWithLightbox
           src={imageUrl}
           alt={share.title || share.fileName || t("view.image.alt")}
+          shareUrl={`/s/${share.id}?fs=1`}
         />
       </div>
       {/* Sticky download bar */}

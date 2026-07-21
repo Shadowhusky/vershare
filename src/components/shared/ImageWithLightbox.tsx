@@ -6,9 +6,11 @@ import { readViewParam, writeViewParams } from "@/lib/view-state";
 interface ImageWithLightboxProps {
   src: string;
   alt: string;
+  // Relative share URL that reopens this image fullscreen (e.g. /s/abc?fs=1)
+  shareUrl?: string;
 }
 
-export default function ImageWithLightbox({ src, alt }: ImageWithLightboxProps) {
+export default function ImageWithLightbox({ src, alt, shareUrl }: ImageWithLightboxProps) {
   const [open, setOpen] = useState(false);
 
   // Restore fullscreen state from a shared URL (?fs=1)
@@ -41,6 +43,7 @@ export default function ImageWithLightbox({ src, alt }: ImageWithLightboxProps) 
         <Lightbox
           items={[{ name: alt, src }]}
           index={0}
+          getShareUrl={shareUrl ? () => window.location.origin + shareUrl : undefined}
           onIndexChange={() => {}}
           onClose={() => setOpenSynced(false)}
         />

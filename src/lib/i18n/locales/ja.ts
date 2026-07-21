@@ -369,6 +369,7 @@ export const ja: Record<TranslationKey, string> = {
   "seen.empty.title": "まだありません",
   "seen.empty.body": "他の人から開いたドロップがここに表示されます。",
   "lightbox.close": "閉じる",
+  "lightbox.copyLink": "この表示へのリンクをコピー",
   "lightbox.loadFailed": "この画像を読み込めません",
   "lightbox.next": "次の画像",
   "lightbox.prev": "前の画像",

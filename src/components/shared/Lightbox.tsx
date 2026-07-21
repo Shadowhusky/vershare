@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Loader2, Link2, Check } from "lucide-react";
 import { useT } from "@/lib/i18n";
 
 export interface LightboxItem {
@@ -15,12 +15,14 @@ interface LightboxProps {
   index: number;
   onIndexChange: (index: number) => void;
   onClose: () => void;
+  // When provided, the top bar offers copying a link that reopens this view
+  getShareUrl?: (index: number) => string;
 }
 
 const SWIPE_COMMIT_PX = 70;
 const SWIPE_CLOSE_PX = 90;
 
-export default function Lightbox({ items, index, onIndexChange, onClose }: LightboxProps) {
+export default function Lightbox({ items, index, onIndexChange, onClose, getShareUrl }: LightboxProps) {
   const t = useT();
   const [srcMap, setSrcMap] = useState<Record<number, string>>({});
   const [failed, setFailed] = useState<Record<number, boolean>>({});
@@ -55,12 +57,14 @@ export default function Lightbox({ items, index, onIndexChange, onClose }: Light
     [items, srcMap, count]
   );
 
-  // Current + neighbors, so swiping lands on an already-loaded image
+  // Current + wrapped neighbors, so swiping lands on an already-loaded image
   useEffect(() => {
     resolve(index);
-    resolve(index + 1);
-    resolve(index - 1);
-  }, [index, resolve]);
+    if (count > 1) {
+      resolve((index + 1) % count);
+      resolve((index - 1 + count) % count);
+    }
+  }, [index, count, resolve]);
 
   // Entrance fade + scroll lock
   useEffect(() => {
@@ -75,14 +79,27 @@ export default function Lightbox({ items, index, onIndexChange, onClose }: Light
 
   const go = useCallback(
     (delta: number) => {
-      const next = index + delta;
-      if (next < 0 || next >= count) return;
+      if (count < 2) return;
+      // wrap around — arrows stay put and never dead-end
+      const next = (index + delta + count) % count;
       setZoom(false);
       setPan({ x: 0, y: 0 });
       onIndexChange(next);
     },
     [index, count, onIndexChange]
   );
+
+  const [linkCopied, setLinkCopied] = useState(false);
+  const copyLink = useCallback(() => {
+    if (!getShareUrl) return;
+    navigator.clipboard
+      ?.writeText(getShareUrl(index))
+      .then(() => {
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 1500);
+      })
+      .catch(() => {});
+  }, [getShareUrl, index]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -177,6 +194,16 @@ export default function Lightbox({ items, index, onIndexChange, onClose }: Light
               {index + 1} / {count}
             </span>
           )}
+          {getShareUrl && (
+            <button
+              onClick={copyLink}
+              aria-label={t("lightbox.copyLink")}
+              title={t("lightbox.copyLink")}
+              className={`transition-colors p-1 ${linkCopied ? "text-pixel-green" : "text-white/80 hover:text-white"}`}
+            >
+              {linkCopied ? <Check size={20} /> : <Link2 size={20} />}
+            </button>
+          )}
           <button
             onClick={onClose}
             aria-label={t("lightbox.close")}
@@ -221,30 +248,30 @@ export default function Lightbox({ items, index, onIndexChange, onClose }: Light
         )}
       </div>
 
-      {/* Arrows */}
-      {count > 1 && index > 0 && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            go(-1);
-          }}
-          aria-label={t("lightbox.prev")}
-          className="absolute left-2 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white transition-colors"
-        >
-          <ChevronLeft size={30} />
-        </button>
-      )}
-      {count > 1 && index < count - 1 && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            go(1);
-          }}
-          aria-label={t("lightbox.next")}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white transition-colors"
-        >
-          <ChevronRight size={30} />
-        </button>
+      {/* Arrows — always visible in galleries; navigation wraps around */}
+      {count > 1 && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              go(-1);
+            }}
+            aria-label={t("lightbox.prev")}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white transition-colors"
+          >
+            <ChevronLeft size={30} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              go(1);
+            }}
+            aria-label={t("lightbox.next")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white transition-colors"
+          >
+            <ChevronRight size={30} />
+          </button>
+        </>
       )}
     </div>
   );

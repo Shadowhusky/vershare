@@ -369,6 +369,7 @@ export const de: Record<TranslationKey, string> = {
   "seen.empty.title": "NOCH NICHTS",
   "seen.empty.body": "Geöffnete Drops von anderen erscheinen hier.",
   "lightbox.close": "Schließen",
+  "lightbox.copyLink": "Link zu dieser Ansicht kopieren",
   "lightbox.loadFailed": "Bild konnte nicht geladen werden",
   "lightbox.next": "Nächstes Bild",
   "lightbox.prev": "Vorheriges Bild",

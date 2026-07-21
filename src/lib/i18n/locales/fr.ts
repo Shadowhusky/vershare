@@ -369,6 +369,7 @@ export const fr: Record<TranslationKey, string> = {
   "seen.empty.title": "RIEN POUR L'INSTANT",
   "seen.empty.body": "Les drops des autres que vous ouvrez apparaissent ici.",
   "lightbox.close": "Fermer",
+  "lightbox.copyLink": "Copier le lien de cette vue",
   "lightbox.loadFailed": "Impossible de charger cette image",
   "lightbox.next": "Image suivante",
   "lightbox.prev": "Image précédente",

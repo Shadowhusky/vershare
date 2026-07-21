@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { openArchive, ArchiveEntry, ArchiveSource } from "@/lib/archive";
 import { inferMimeType } from "@/lib/mime";
+import { detectPreviewKind, PreviewKind, IMG_EXT, MAX_TEXT_PREVIEW } from "@/lib/preview-kind";
 import { formatFileSize } from "@/lib/constants";
 import { readViewParam, writeViewParams } from "@/lib/view-state";
 import Lightbox from "@/components/shared/Lightbox";
@@ -23,39 +24,13 @@ import MarkdownView from "./MarkdownView";
 import CodeView from "./CodeView";
 import { useT } from "@/lib/i18n";
 
-// No svg: SVG can carry scripts, so archive SVGs stay download-only
-const IMG_EXT = /\.(png|jpe?g|gif|webp|avif|bmp|ico)$/i;
-const MD_EXT = /\.(md|markdown)$/i;
-const TEXT_EXT = /\.(txt|log|csv|tsv|ini|cfg|conf|env|gitignore|license|readme)$/i;
-const CODE_LANG: Record<string, string> = {
-  js: "javascript", mjs: "javascript", cjs: "javascript", jsx: "javascript",
-  ts: "typescript", tsx: "typescript",
-  py: "python", java: "java", c: "c", h: "c", cpp: "cpp", cc: "cpp", hpp: "cpp",
-  cs: "csharp", go: "go", rs: "rust", rb: "ruby", php: "php", swift: "swift",
-  kt: "kotlin", html: "html", htm: "html", css: "css", scss: "css", sql: "sql",
-  sh: "bash", bash: "bash", zsh: "bash", json: "json", yml: "yaml", yaml: "yaml",
-  toml: "yaml", xml: "xml",
-};
-const MAX_TEXT_PREVIEW = 2 * 1024 * 1024;
 // getBlob materializes the whole decompressed entry — bound it
 const MAX_EXTRACT = 256 * 1024 * 1024;
 // DOM cost, not tree cost, dominates huge archives — cap rendered rows
 const MAX_ROWS = 2000;
 
-type Kind = "image" | "markdown" | "code" | "text" | "media" | "other";
-
-function entryKind(name: string): { kind: Kind; language?: string; mime?: string } {
-  if (IMG_EXT.test(name)) return { kind: "image" };
-  if (MD_EXT.test(name)) return { kind: "markdown" };
-  const ext = name.split(".").pop()?.toLowerCase() || "";
-  if (CODE_LANG[ext]) return { kind: "code", language: CODE_LANG[ext] };
-  if (TEXT_EXT.test(name) || /^\./.test(name)) return { kind: "text" };
-  const mime = inferMimeType(name);
-  if (mime.startsWith("video/") || mime.startsWith("audio/") || mime === "application/pdf") {
-    return { kind: "media", mime };
-  }
-  return { kind: "other" };
-}
+type Kind = PreviewKind;
+const entryKind = detectPreviewKind;
 
 function kindIcon(kind: Kind) {
   switch (kind) {
@@ -134,7 +109,15 @@ type Preview =
   | { path: string; kind: "media"; url: string; mime: string; name: string }
   | { path: string; kind: "toolarge" | "failed" };
 
-export default function ArchiveView({ source, archiveName }: { source: ArchiveSource; archiveName?: string }) {
+export default function ArchiveView({
+  source,
+  archiveName,
+  shareId,
+}: {
+  source: ArchiveSource;
+  archiveName?: string;
+  shareId?: string;
+}) {
   const t = useT();
   const [entries, setEntries] = useState<ArchiveEntry[] | null>(null);
   const [error, setError] = useState(false);
@@ -427,6 +410,11 @@ export default function ArchiveView({ source, archiveName }: { source: ArchiveSo
         <Lightbox
           items={galleryItems}
           index={gallery}
+          getShareUrl={
+            shareId
+              ? (i) => `${window.location.origin}/s/${shareId}?p=${encodeURIComponent(images[i].path)}`
+              : undefined
+          }
           onIndexChange={(i) => {
             setGallery(i);
             syncUrl(images[i].path);

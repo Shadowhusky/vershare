@@ -369,6 +369,7 @@ export const en = {
   "seen.empty.title": "NOTHING YET",
   "seen.empty.body": "Drops you open from others show up here.",
   "lightbox.close": "Close",
+  "lightbox.copyLink": "Copy link to this view",
   "lightbox.loadFailed": "Couldn't load this image",
   "lightbox.next": "Next image",
   "lightbox.prev": "Previous image",
